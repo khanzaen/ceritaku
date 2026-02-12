@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Database\Seeds;
+
+use CodeIgniter\Database\Seeder;
+
+class StorySeeder extends Seeder
+{
+    public function run()
+    {
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'Laut Bercerita',
+                'author_id' => 6,
+                'genres' => 'Drama Sejarah',
+                'description' => 'Sebuah kisah tentang sekelompok mahasiswa yang berani bermimpi di tengah represi dan ketakutan. Di balik persahabatan yang hangat, tersimpan perjuangan sunyi, pengorbanan, dan luka mendalam akibat sejarah kelam yang tak pernah benar-benar selesai.',
+                'cover_image' => 'covers/laut-bercerita.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:48:57',
+                'updated_at' => '2026-01-27 16:48:57',
+            ],
+            [
+                'id' => 2,
+                'title' => 'Dilan 1990',
+                'author_id' => 7,
+                'genres' => 'Romance',
+                'description' => 'Bandung tahun 1990 menjadi saksi kisah cinta remaja yang sederhana namun membekas. Dilan, dengan caranya yang unik dan tak terduga, menghadirkan pengalaman jatuh cinta pertama yang manis, lucu, dan penuh kenangan bagi Milea.',
+                'cover_image' => 'covers/dilan-1990.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:48:57',
+                'updated_at' => '2026-01-27 16:48:57',
+            ],
+            [
+                'id' => 3,
+                'title' => 'Love Me When It Hurts',
+                'author_id' => 8,
+                'genres' => 'Romance',
+                'description' => 'Ketika cinta tak selalu datang dalam bentuk bahagia, luka menjadi bagian dari perjalanan. Novel ini mengisahkan hubungan yang rapuh, pergulatan emosi, dan keberanian untuk bertahan serta mencintai diri sendiri di saat segalanya terasa menyakitkan.',
+                'cover_image' => 'covers/love-me-when-it-hurts.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:48:57',
+                'updated_at' => '2026-01-27 16:48:57',
+            ],
+            [
+                'id' => 4,
+                'title' => 'Seporsi Mie Ayam Sebelum Mati',
+                'author_id' => 9,
+                'genres' => 'Slice of Life',
+                'description' => 'Di tengah kelelahan hidup dan pikiran tentang kematian, sebuah seporsi mie ayam menjadi titik balik yang tak terduga. Cerita ini mengajak pembaca merenungkan arti hidup, kehilangan, dan kebahagiaan kecil yang sering terabaikan.',
+                'cover_image' => 'covers/seporsi-mie-ayam-sebelum-mati.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:48:57',
+                'updated_at' => '2026-01-28 14:54:58',
+            ],
+            [
+                'id' => 5,
+                'title' => 'Milea',
+                'author_id' => 7,
+                'genres' => 'Romance',
+                'description' => 'Kisah cinta Dilan dan Milea berlanjut, kali ini diceritakan dari sudut pandang Dilan. Cerita ini mengungkap perasaan, pilihan, dan konsekuensi yang menyertai cinta remaja ketika kenyataan mulai berbenturan dengan harapan.',
+                'cover_image' => 'covers/milea.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:48:57',
+                'updated_at' => '2026-01-27 16:48:57',
+            ],
+            [
+                'id' => 6,
+                'title' => 'Hujan',
+                'author_id' => 10,
+                'genres' => 'Drama',
+                'description' => 'Di tengah dunia masa depan yang dipenuhi teknologi dan bencana, Lail berjuang menyimpan kenangan tentang cinta, kehilangan, dan harapan. Sebuah kisah menyentuh tentang pilihan hidup dan perasaan yang tak pernah benar-benar hilang.',
+                'cover_image' => 'covers/hujan.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-27 16:49:56',
+            ],
+            [
+                'id' => 8,
+                'title' => 'Rindu',
+                'author_id' => 10,
+                'genres' => 'Religi',
+                'description' => 'Sebuah perjalanan panjang menuju Tanah Suci mempertemukan berbagai latar belakang manusia dengan cerita hidup masing-masing. Rindu adalah kisah tentang pencarian makna, keikhlasan, dan rindu yang mendalam kepada Tuhan.',
+                'cover_image' => 'covers/rindu.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-27 16:49:56',
+            ],
+            [
+                'id' => 9,
+                'title' => 'Daun yang Jatuh Tak Pernah Membenci Angin',
+                'author_id' => 10,
+                'genres' => 'Romance',
+                'description' => 'Kisah cinta yang sederhana namun penuh ketulusan, tentang menerima kenyataan dan mencintai tanpa harus memiliki. Novel ini menyentuh sisi paling lembut dari perasaan manusia.',
+                'cover_image' => 'covers/daun-yang-jatuh-tak-pernah-membenci-angin.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-28 14:59:45',
+            ],
+            [
+                'id' => 10,
+                'title' => 'Bumi',
+                'author_id' => 10,
+                'genres' => 'Fantasy Adventure',
+                'description' => 'Kisah tentang Raib, seorang remaja biasa-biasa saja yang mengetahui keberadaan dunia paralel. Di dunia itu, dia adalah seorang pahlawan legendaris. Perpaduan antara dunia nyata dan fantasi menciptakan petualangan yang mendebarkan dan penuh penggalian makna kehidupan.',
+                'cover_image' => 'covers/bumi.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-27 16:49:56',
+            ],
+            [
+                'id' => 11,
+                'title' => 'Bulan',
+                'author_id' => 10,
+                'genres' => 'Fantasy Adventure',
+                'description' => 'Lanjutan dari Bumi, dimana Raib dan teman-temannya harus menghadapi tantangan yang semakin besar. Petualangan mereka membawa pesan tentang keberanian, persahabatan, dan pengorbanan demi kebaikan.',
+                'cover_image' => 'covers/bulan.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-27 16:49:56',
+            ],
+            [
+                'id' => 12,
+                'title' => 'Bintang',
+                'author_id' => 10,
+                'genres' => 'Fantasy Adventure',
+                'description' => 'Perjalanan berlanjut dengan misteri yang semakin dalam. Raib mulai mengerti identitasnya yang sebenarnya dalam dunia paralel. Novel ini menghadirkan plot twist yang mengubah segalanya dan membawa pembaca lebih dekat ke kebenaran.',
+                'cover_image' => 'covers/bintang.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-27 16:49:56',
+            ],
+            [
+                'id' => 13,
+                'title' => 'Matahari',
+                'author_id' => 10,
+                'genres' => 'Fantasy Adventure',
+                'description' => 'Kesimpulan dari Tetralogi Bumi. Semua pertanyaan terjawab, semua misteri terbuka. Raib dan teman-temannya harus membuat pilihan terakhir yang akan menentukan nasib kedua dunia. Penutupan yang sempurna untuk saga epik ini.',
+                'cover_image' => 'covers/matahari.jpg',
+                'status' => 'PUBLISHED',
+                'created_at' => '2026-01-27 16:49:56',
+                'updated_at' => '2026-01-27 16:49:56',
+            ],
+        ];
+
+        $this->db->table('stories')->insertBatch($data);
+    }
+}
