@@ -49,7 +49,6 @@ class UserLibraryModel extends Model
         $builder = $this->select('user_library.*, 
                 stories.title,
                 stories.cover_image,
-                stories.genres,
                 users.name as author_name')
             ->join('stories', 'stories.id = user_library.story_id')
             ->join('users', 'users.id = stories.author_id')

@@ -53,7 +53,7 @@ $current_uri = uri_string();
                 <div class="flex items-center gap-3 relative">
                     <button type="button" id="profile-menu-button" class="w-9 h-9 rounded-full overflow-hidden border border-border hover:border-accent transition-colors flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600" aria-label="Profile menu" aria-haspopup="true" aria-expanded="false">
                         <?php if (!empty($user_photo)): ?>
-                            <img src="<?= base_url($user_photo) ?>" alt="<?= esc($user_name) ?>" class="w-full h-full object-cover" />
+                            <img src="<?= profile_url($user_photo) ?>" alt="<?= esc($user_name) ?>" class="w-full h-full object-cover" />
                         <?php else: ?>
                             <?php
                             // Get initials from user name

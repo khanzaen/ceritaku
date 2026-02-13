@@ -85,7 +85,7 @@
             <div class="w-[180px] flex-none p-3 rounded-xl border border-border bg-white hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
               <div class="relative w-full aspect-[2/3] rounded overflow-hidden bg-slate-100 book-card-shadow mb-3 group">
                 <?php if (!empty($story['cover_image'])): ?>
-                  <img src="<?= base_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 <?php else: ?>
                   <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
                     <span class="material-symbols-outlined text-purple-400 text-[48px]">auto_stories</span>
@@ -94,7 +94,7 @@
               </div>
               <div class="space-y-1">
                 <div class="flex items-center gap-1 text-[10px] text-slate-500">
-                  <span class="px-1.5 py-0.5 bg-slate-100 rounded uppercase tracking-widest font-bold"><?= esc(substr($story['genres'] ?? 'Fiction', 0, 15)) ?></span>
+                  <span class="px-1.5 py-0.5 bg-slate-100 rounded uppercase tracking-widest font-bold"><?= esc(trim(explode(', ', $story['genres'] ?? 'Fiction')[0])) ?></span>
                 </div>
                 <h3 class="text-sm font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
                 <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
@@ -138,7 +138,7 @@
             <div class="grid md:grid-cols-2 gap-8 p-8 md:p-10">
               <div class="flex flex-col justify-center">
                 <div class="flex items-center gap-2 mb-4">
-                  <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-bold uppercase tracking-wide"><?= esc($story['genres'] ?? 'Fiction') ?></span>
+                  <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-bold uppercase tracking-wide"><?= esc(trim(explode(', ', $story['genres'] ?? 'Fiction')[0])) ?></span>
                 </div>
                 <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2"><?= esc($story['title']) ?></h1>
                 <p class="text-lg text-slate-600 mb-6"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
@@ -156,7 +156,7 @@
               <div class="flex items-center justify-center">
                 <div class="relative w-48 h-64 rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
                   <?php if (!empty($story['cover_image'])): ?>
-                    <img src="<?= base_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover" />
+                    <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover" />
                   <?php else: ?>
                     <div class="w-full h-full bg-gradient-to-br from-purple-300 to-purple-500 flex items-center justify-center">
                       <span class="material-symbols-outlined text-white text-[120px]">auto_stories</span>
@@ -211,7 +211,7 @@
             <div class="w-[180px] flex-none p-3 rounded-xl border border-border bg-gradient-to-br <?= $bg_color ?> via-white to-white shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
               <div class="relative w-full aspect-[2/3] rounded overflow-hidden bg-slate-100 book-card-shadow mb-3 group">
                 <?php if (!empty($story['cover_image'])): ?>
-                  <img src="<?= base_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 <?php else: ?>
                   <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
                     <span class="material-symbols-outlined text-purple-400 text-[48px]">auto_stories</span>
@@ -221,7 +221,7 @@
               </div>
               <div class="space-y-1">
                 <div class="flex items-center gap-1 text-[10px] text-slate-500">
-                  <span class="px-1.5 py-0.5 bg-slate-100 rounded uppercase tracking-widest font-bold"><?= esc(substr($story['genres'] ?? 'Fiction', 0, 15)) ?></span>
+                  <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-500 rounded"><?= esc(trim(explode(', ', $story['genres'] ?? 'Fiction')[0])) ?></span>
                 </div>
                 <h3 class="text-sm font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
                 <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
@@ -308,7 +308,7 @@
               <a href="<?= base_url('/story/' . $story['id']) ?>" class="flex items-start gap-3">
                 <div class="w-12 h-16 rounded overflow-hidden bg-slate-100 book-card-shadow flex-none group">
                   <?php if (!empty($story['cover_image'])): ?>
-                    <img src="<?= base_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <?php else: ?>
                     <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
                       <span class="material-symbols-outlined text-purple-400 text-[24px]">auto_stories</span>
@@ -359,7 +359,7 @@
             <div class="w-20 flex-none">
               <div class="aspect-[2/3] bg-slate-100 rounded-lg overflow-hidden book-card-shadow">
                 <?php if (!empty($story['cover_image'])): ?>
-                  <img src="<?= base_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover" />
+                  <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover" />
                 <?php else: ?>
                   <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
                     <span class="material-symbols-outlined text-purple-400 text-[24px]">auto_stories</span>
@@ -418,7 +418,7 @@
             <!-- Author Avatar -->
             <div class="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600">
               <?php if (!empty($author['profile_photo'])): ?>
-                <img src="<?= base_url($author['profile_photo']) ?>" alt="<?= esc($author['name']) ?>" class="w-full h-full object-cover" />
+                <img src="<?= profile_url($author['profile_photo']) ?>" alt="<?= esc($author['name']) ?>" class="w-full h-full object-cover" />
               <?php else: ?>
                 <span class="text-white text-xl font-bold"><?= $initials ?></span>
               <?php endif; ?>

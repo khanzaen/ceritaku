@@ -9,6 +9,9 @@ use CodeIgniter\Router\RouteCollection;
 // Homepage
 $routes->get('/', 'Home::index');
 
+// File serving from writable folder
+$routes->get('files/(:segment)/(:any)', 'FileController::serve/$1/$2');
+
 // Authentication (Shield)
 $routes->group('auth', function($routes) {
     $routes->post('login', 'AuthController::login');

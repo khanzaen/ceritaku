@@ -100,7 +100,7 @@
                     <?php foreach($latest_users as $user): ?>
                         <div class="flex items-center gap-4">
                             <?php if (!empty($user['profile_photo'])): ?>
-                                <img src="<?= base_url($user['profile_photo']) ?>" alt="Profile" class="w-12 h-12 rounded-full object-cover">
+                                <img src="<?= profile_url($user['profile_photo']) ?>" alt="Profile" class="w-12 h-12 rounded-full object-cover">
                             <?php else: ?>
                                 <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                                     <span class="text-blue-600 font-bold"><?= strtoupper(substr($user['name'], 0, 1)) ?></span>

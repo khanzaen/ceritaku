@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a href="<?= base_url('/story/' . $review['story_id']) ?>" class="block">
                                 <div class="aspect-[2/3] bg-slate-100 rounded-sm overflow-hidden book-card-shadow transition-transform duration-300 group-hover:-translate-y-1">
                                     <?php if (!empty($review['cover_image'])): ?>
-                                        <img alt="<?= esc($review['story_title']) ?> Cover" class="w-full h-full object-cover" src="<?= base_url($review['cover_image']) ?>"/>
+                                        <img alt="<?= esc($review['story_title']) ?> Cover" class="w-full h-full object-cover" src="<?= cover_url($review['cover_image']) ?>"/>
                                     <?php else: ?>
                                         <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-200">
                                             <span class="material-symbols-outlined text-6xl text-purple-400">menu_book</span>
@@ -156,11 +156,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="flex flex-col">
                             <div class="flex items-center gap-2 mb-3">
-                                <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-500 rounded"><?= esc($review['genres']) ?></span>
+                                <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-500 rounded"><?= esc(trim(explode(', ', $review['genres'])[0])) ?></span>
                                 <span class="text-slate-300">|</span>
                                 <div class="flex items-center gap-1.5">
                                     <?php if (!empty($review['user_photo'])): ?>
-                                        <img alt="Reviewer" class="w-5 h-5 rounded-full border border-border object-cover" src="<?= base_url($review['user_photo']) ?>"/>
+                                        <img alt="Reviewer" class="w-5 h-5 rounded-full border border-border object-cover" src="<?= profile_url($review['user_photo']) ?>"/>
                                     <?php else: ?>
                                         <?php
                                         // Get initials from reviewer name

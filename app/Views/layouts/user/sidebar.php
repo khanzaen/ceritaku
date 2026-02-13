@@ -36,7 +36,7 @@ $current_uri = uri_string();
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-border dark:border-slate-600 flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600">
                         <?php if (!empty($user_photo)): ?>
-                            <img src="<?= base_url($user_photo) ?>" alt="<?= esc($user_name) ?>" class="w-full h-full object-cover" />
+                            <img src="<?= profile_url($user_photo) ?>" alt="<?= esc($user_name) ?>" class="w-full h-full object-cover" />
                         <?php else: ?>
                             <?php
                             // Get initials from user name

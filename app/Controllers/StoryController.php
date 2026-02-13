@@ -39,14 +39,17 @@ class StoryController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
         }
 
+        // Get primary genre for related stories
+        $genres = array_filter(array_map('trim', explode(',', $story['genres'] ?? '')));
+        $primary_genre = !empty($genres) ? $genres[0] : '';
+
         $data = [
             'title' => $story['title'],
             'story' => $story,
-            'chapters' => $this->chapterModel->getChaptersByStory($id),
-            'reviews' => $this->reviewModel->getReviewsByStory($id, 10),
-            'avg_rating' => $this->ratingModel->getAverageRating($id),
-            'rating_distribution' => $this->ratingModel->getRatingDistribution($id),
-            'total_ratings' => $this->ratingModel->getTotalRatings($id),
+            'chapters' => $this->chapterModel->getChaptersByStory($id, 3),
+            'reviews' => $this->reviewModel->getReviewsByStory($id, 3),
+            'related_stories' => !empty($primary_genre) ? $this->storyModel->getStoriesByGenre($primary_genre, 6) : [],
+            'is_bookmarked' => false,
         ];
 
         // Check if user has bookmarked
@@ -57,7 +60,7 @@ class StoryController extends BaseController
             $data['user_progress'] = $this->libraryModel->getProgress($userId, $id);
         }
 
-        return view('story/detail', $data);
+        return view('pages/story-detail', $data);
     }
 
     /**
@@ -68,12 +71,14 @@ class StoryController extends BaseController
         $genre = $this->request->getGet('genre');
         $search = $this->request->getGet('q');
 
+        // Get top picks this week for main display
+        $stories = $this->storyModel->getTopStoriesThisWeek(10);
+
+        // If there's a search or genre filter, override with specific results
         if ($search) {
             $stories = $this->storyModel->searchStories($search);
         } elseif ($genre) {
             $stories = $this->storyModel->getStoriesByGenre($genre);
-        } else {
-            $stories = $this->storyModel->getPublishedStories();
         }
 
         // Fetch trending stories by specific genres
@@ -100,7 +105,7 @@ class StoryController extends BaseController
             'popular_authors' => $popular_authors,
         ];
 
-        return view('story/discover', $data);
+        return view('pages/discover', $data);
     }
 
     /**

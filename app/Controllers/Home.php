@@ -23,13 +23,13 @@ class Home extends BaseController
     {
         $data = [
             'title' => 'CeritaKu - Platform Novel Indonesia',
-            'featured_reviews' => $this->reviewModel->getFeaturedReviews(6),
+            'featured_reviews' => $this->reviewModel->getFeaturedReviews(8),
             'latest_reviews' => $this->reviewModel->getLatestReviews(4),
             'total_stories' => $this->storyModel->getTotalStories('PUBLISHED'),
             'total_users' => $this->userModel->getTotalUsers(),
             'total_reviews' => $this->reviewModel->getTotalReviews(),
         ];
 
-        return view('home', $data);
+        return view('pages/home', $data);
     }
 }
