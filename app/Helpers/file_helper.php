@@ -23,15 +23,20 @@ if (!function_exists('file_url')) {
             return $path;
         }
 
+        // Strip "uploads/" prefix jika ada (untuk path yang sudah punya prefix)
+        if (strpos($path, 'uploads/') === 0) {
+            $path = substr($path, 8); // Remove "uploads/" prefix
+        }
+
         // Normalize path: jika dimulai dengan 'covers/', tambahkan 'uploads/' prefix
         // Karena struktur fisik: writable/uploads/covers/
         if (strpos($path, 'covers/') === 0) {
             $path = 'uploads/' . $path;
-        }
-        
-        // Jika sudah dimulai dengan 'uploads/', gunakan langsung
-        // Jika belum, tambahkan 'uploads/' prefix
-        if (strpos($path, 'uploads/') !== 0) {
+        } elseif (strpos($path, 'profiles/') === 0) {
+            // Untuk profiles juga, tambahkan uploads/ prefix
+            $path = 'uploads/' . $path;
+        } elseif (strpos($path, 'uploads/') !== 0) {
+            // Jika belum ada prefix apapun, tambahkan 'uploads/' 
             $path = 'uploads/' . $path;
         }
 

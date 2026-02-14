@@ -1,0 +1,14 @@
+/.git
+/.gitignore
+/builds
+/node_modules
+/vendor
+/.env.local
+/.env.*.local
+/tests
+/README.md
+/.editorconfig
+/.gitattributes
+/.idea
+/.vscode
+*.log

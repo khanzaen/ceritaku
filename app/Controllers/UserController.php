@@ -8,6 +8,7 @@ use App\Models\UserLibraryModel;
 use App\Models\ReviewModel;
 use App\Models\CommentModel;
 
+
 class UserController extends BaseController
 {
     protected $userModel;
@@ -16,6 +17,7 @@ class UserController extends BaseController
     protected $reviewModel;
     protected $commentModel;
 
+
     public function __construct()
     {
         $this->userModel = new UserModel();
@@ -23,6 +25,38 @@ class UserController extends BaseController
         $this->libraryModel = new UserLibraryModel();
         $this->reviewModel = new ReviewModel();
         $this->commentModel = new CommentModel();
+
+    }
+
+    /**
+     * View user/author profile (public view)
+     */
+    public function viewUser($id)
+    {
+        $user = $this->userModel->find($id);
+
+        if (!$user) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('User not found');
+        }
+
+        $stories = $this->storyModel->getStoriesByAuthor($id, 'PUBLISHED');
+        
+        // Calculate total reads
+        $totalReads = 0;
+        foreach ($stories as $story) {
+            $totalReads += $story['total_views'] ?? 0;
+        }
+
+
+        $data = [
+            'title' => $user['name'] . ' - Author Profile',
+            'author' => $user,
+            'stories' => $stories,
+            'total_stories' => count($stories),
+            'total_reads' => $totalReads,
+        ];
+
+        return view('pages/user-info', $data);
     }
 
     /**
@@ -41,14 +75,24 @@ class UserController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('User not found');
         }
 
+        $stories = $this->storyModel->getStoriesByAuthor($id, 'PUBLISHED');
+        
+        // Calculate total reads
+        $totalReads = 0;
+        foreach ($stories as $story) {
+            $totalReads += $story['total_views'] ?? 0;
+        }
+
         $data = [
-            'title' => $user['name'] . ' - Profile',
-            'user' => $user,
-            'stories' => $this->storyModel->getStoriesByAuthor($id, 'PUBLISHED'),
-            'total_stories' => count($this->storyModel->getStoriesByAuthor($id, 'PUBLISHED')),
+            'title' => $user['name'] . ' - Author Profile',
+            'author' => $user,
+            'stories' => $stories,
+            'total_stories' => count($stories),
+            'total_reads' => $totalReads,
+            'followers' => 0, // TODO: Implement followers feature
         ];
 
-        return view('user/profile', $data);
+        return view('pages/user-info', $data);
     }
 
     /**
@@ -179,5 +223,21 @@ class UserController extends BaseController
         }
 
         return redirect()->back()->with('error', 'Gagal update profile')->withInput();
+    }
+
+    /**
+     * Follow/unfollow user
+     */
+    public function follow($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Login dulu']);
+        }
+        $userId = session()->get('user_id');
+        if ($userId == $id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak bisa follow diri sendiri']);
+        }
+        // Fitur follow di-nonaktifkan
+        return $this->response->setJSON(['success' => false, 'message' => 'Fitur follow dinonaktifkan']);
     }
 }

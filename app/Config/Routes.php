@@ -30,6 +30,9 @@ $routes->get('/story/(:num)/remove-from-library', 'StoryController::removeFromLi
 $routes->get('/chapter/(:num)', 'ChapterController::read/$1');
 $routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
 
+// User/Author Profile
+$routes->get('/user/(:num)', 'UserController::viewUser/$1');
+
 // User Profile & Activity
 $routes->get('/profile', 'UserController::profile');
 $routes->get('/profile/(:num)', 'UserController::profile/$1');
@@ -38,6 +41,7 @@ $routes->get('/my-reviews', 'UserController::reviews');
 $routes->get('/my-comments', 'UserController::comments');
 $routes->get('/profile/edit', 'UserController::editProfile');
 $routes->post('/profile/update', 'UserController::updateProfile');
+$routes->post('/user/(:num)/follow', 'UserController::follow/$1');
 
 // Admin Routes
 $routes->group('admin', ['filter' => 'auth'], function($routes) {

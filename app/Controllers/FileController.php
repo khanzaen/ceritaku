@@ -16,7 +16,7 @@ class FileController extends BaseController
     {
         // Validasi bahwa folder awal adalah 'uploads'
         if ($folder !== 'uploads') {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
         }
 
         // Gabungkan path segments
@@ -30,13 +30,21 @@ class FileController extends BaseController
         
         // Cek apakah file ada
         if (!is_file($fullPath)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
         }
 
-        // Get mime type
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $fullPath);
-        finfo_close($finfo);
+        // Get mime type dari extension
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'pdf' => 'application/pdf',
+            'txt' => 'text/plain',
+        ];
+        $mimeType = $mimeTypes[$ext] ?? 'application/octet-stream';
 
         // Set headers untuk caching
         $this->response->setHeader('Content-Type', $mimeType);

@@ -1,0 +1,62 @@
+services:
+  # PHP & Apache Service
+  app:
+    build: .
+    container_name: ceritaku_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+      - "8080:80"
+    environment:
+      - CI_ENVIRONMENT=production
+      - APP_BASEURL=http://localhost:8080/
+    volumes:
+      - ./:/var/www/html
+      - ./writable:/var/www/html/writable
+      - ./public/uploads:/var/www/html/public/uploads
+    depends_on:
+      - db
+    networks:
+      - ceritaku_network
+
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: ceritaku_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: db_ceritaku2
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: ceritaku_user
+      MYSQL_PASSWORD: ceritaku_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - ceritaku_network
+
+  # phpMyAdmin (optional, untuk manage database)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ceritaku_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_USER: ceritaku_user
+      PMA_PASSWORD: ceritaku_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - ceritaku_network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  ceritaku_network:
+    driver: bridge
