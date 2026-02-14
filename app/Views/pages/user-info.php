@@ -76,8 +76,14 @@
         </div>
     </div>
 
-    <!-- Cerita dari Author -->
-    <div>
+    <!-- Menu Navigasi Daftar Cerita & Postingan -->
+    <div class="mb-8">
+        <div class="flex gap-2 border-b border-slate-200" id="nav-tabs">
+            <button type="button" id="tab-stories" class="px-4 py-2 font-semibold text-slate-700 border-b-2 border-purple-600 bg-white focus:outline-none" onclick="showSection('stories')">Daftar Cerita</button>
+            <button type="button" id="tab-posts" class="px-4 py-2 font-semibold text-slate-700 border-b-2 border-transparent bg-white focus:outline-none" onclick="showSection('posts')">Postingan</button>
+        </div>
+    </div>
+    <div id="section-stories">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-slate-900">
                 Cerita oleh <?= esc($author['name']) ?>
@@ -86,7 +92,6 @@
                 <span class="text-sm text-slate-500"><?= count($stories) ?> cerita</span>
             <?php endif; ?>
         </div>
-        
         <?php if (!empty($stories)): ?>
             <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                 <?php foreach($stories as $story): ?>
@@ -101,7 +106,6 @@
                                         <span class="material-symbols-outlined text-3xl md:text-5xl text-purple-400">menu_book</span>
                                     </div>
                                 <?php endif; ?>
-                                
                                 <!-- Status Badge -->
                                 <?php if ($story['status'] !== 'PUBLISHED'): ?>
                                     <div class="absolute top-1.5 right-1.5">
@@ -119,7 +123,6 @@
                                 <?php endif; ?>
                             </div>
                         </a>
-
                         <!-- Content -->
                         <div class="p-2 md:p-3">
                             <div class="mb-1.5">
@@ -127,13 +130,11 @@
                                     <?= esc(trim(explode(',', $story['genres'])[0])) ?>
                                 </span>
                             </div>
-                            
                             <h3 class="text-xs md:text-sm font-bold text-slate-900 line-clamp-2 group-hover:text-accent transition-colors mb-1.5 leading-tight">
                                 <a href="<?= base_url('/story/' . $story['id']) ?>">
                                     <?= esc($story['title']) ?>
                                 </a>
                             </h3>
-
                             <!-- Story Stats -->
                             <div class="flex items-center gap-2 text-[10px] text-slate-500">
                                 <?php if (!empty($story['total_views'])): ?>
@@ -161,6 +162,30 @@
             </div>
         <?php endif; ?>
     </div>
+    <!-- Section: Postingan User (include user-posts.php) -->
+    <div id="section-posts" style="display:none">
+        <?php include(APPPATH . 'Views/pages/user-posts.php'); ?>
+    </div>
+    <script>
+    function showSection(section) {
+        document.getElementById('section-stories').style.display = section === 'stories' ? '' : 'none';
+        document.getElementById('section-posts').style.display = section === 'posts' ? '' : 'none';
+        // Highlight tab aktif
+        document.getElementById('tab-stories').classList.remove('border-purple-600');
+        document.getElementById('tab-stories').classList.add('border-transparent');
+        document.getElementById('tab-posts').classList.remove('border-purple-600');
+        document.getElementById('tab-posts').classList.add('border-transparent');
+        if (section === 'stories') {
+            document.getElementById('tab-stories').classList.remove('border-transparent');
+            document.getElementById('tab-stories').classList.add('border-purple-600');
+        } else {
+            document.getElementById('tab-posts').classList.remove('border-transparent');
+            document.getElementById('tab-posts').classList.add('border-purple-600');
+        }
+    }
+    // Set default tab
+    showSection('stories');
+    </script>
 </div>
 
 <?= $this->endSection() ?>

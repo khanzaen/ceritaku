@@ -40,13 +40,18 @@ class UserController extends BaseController
         }
 
         $stories = $this->storyModel->getStoriesByAuthor($id, 'PUBLISHED');
-        
+
+        // Ambil postingan milik user ini
+        $postModel = new \App\Models\UserPostModel();
+        $posts = $postModel->where('user_id', $id)
+                          ->orderBy('created_at', 'DESC')
+                          ->findAll();
+
         // Calculate total reads
         $totalReads = 0;
         foreach ($stories as $story) {
             $totalReads += $story['total_views'] ?? 0;
         }
-
 
         $data = [
             'title' => $user['name'] . ' - Author Profile',
@@ -54,6 +59,7 @@ class UserController extends BaseController
             'stories' => $stories,
             'total_stories' => count($stories),
             'total_reads' => $totalReads,
+            'posts' => $posts,
         ];
 
         return view('pages/user-info', $data);
