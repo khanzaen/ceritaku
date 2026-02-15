@@ -135,20 +135,20 @@
                                     <?= esc($story['title']) ?>
                                 </a>
                             </h3>
-                            <!-- Story Stats -->
-                            <div class="flex items-center gap-2 text-[10px] text-slate-500">
-                                <?php if (!empty($story['total_views'])): ?>
-                                    <span class="flex items-center gap-0.5">
-                                        <span class="material-symbols-outlined text-xs">visibility</span>
-                                        <?= number_format($story['total_views']) ?>
-                                    </span>
-                                <?php endif; ?>
-                                <?php if (!empty($story['avg_rating'])): ?>
-                                    <span class="flex items-center gap-0.5 text-amber-600">
-                                        <span class="material-symbols-outlined text-xs">star</span>
-                                        <?= number_format($story['avg_rating'], 1) ?>
-                                    </span>
-                                <?php endif; ?>
+                            <?php if (!empty($story['description'])): ?>
+                                <div class="text-[11px] text-slate-600 mb-1 line-clamp-2" title="<?= esc($story['description']) ?>">
+                                    <?= esc($story['description']) ?>
+                                </div>
+                            <?php endif; ?>
+                            <div class="flex items-center gap-2 text-[10px] text-slate-500 mt-1">
+                                <span class="flex items-center gap-0.5">
+                                    <span class="material-symbols-outlined text-xs">visibility</span>
+                                    <?= number_format($story['total_views'] ?? 0) ?>
+                                </span>
+                                <span class="flex items-center gap-0.5 text-amber-600">
+                                    <span class="material-symbols-outlined text-xs">star</span>
+                                    <?= isset($story['avg_rating']) ? number_format($story['avg_rating'], 1) : '0.0' ?>
+                                </span>
                             </div>
                         </div>
                     </article>

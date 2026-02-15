@@ -133,7 +133,7 @@
             <?php if (session()->get('isLoggedIn')): ?>
                 <button onclick="openReviewModal()" class="text-sm font-semibold text-accent hover:underline">Tulis ulasan →</button>
             <?php else: ?>
-                <a href="<?= base_url('/login') ?>" class="text-sm font-semibold text-accent hover:underline">Login untuk ulasan →</a>
+                <a href="<?= base_url('/login') ?>" class="text-sm font-semibold text-accent hover:underline">Lihat ulasan →</a>
             <?php endif; ?>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="reviews-list">

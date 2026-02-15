@@ -46,7 +46,8 @@ class StoryController extends BaseController
         $data = [
             'title' => $story['title'],
             'story' => $story,
-            'chapters' => $this->chapterModel->getChaptersByStory($id, 3),
+            // Perbaiki: hanya kirim story_id, biar status default 'PUBLISHED' digunakan
+            'chapters' => $this->chapterModel->getChaptersByStory($id),
             'reviews' => $this->reviewModel->getReviewsByStory($id, 3),
             'related_stories' => !empty($primary_genre) ? $this->storyModel->getStoriesByGenre($primary_genre, 6) : [],
             'is_bookmarked' => false,

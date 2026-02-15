@@ -33,6 +33,9 @@ $routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
 // User/Author Profile
 $routes->get('/user/(:num)', 'UserController::viewUser/$1');
 
+// User Post Comments
+$routes->post('/user-post/comment', 'UserPostCommentController::add');
+
 // User Profile & Activity
 $routes->get('/profile', 'UserController::profile');
 $routes->get('/profile/(:num)', 'UserController::profile/$1');
