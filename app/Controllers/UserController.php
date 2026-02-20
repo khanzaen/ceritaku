@@ -214,7 +214,7 @@ class UserController extends BaseController
         $file = $this->request->getFile('profile_photo');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = $file->getRandomName();
-            $file->move(WRITEPATH . 'uploads/profiles', $newName);
+            $file->move('public/uploads/profiles', $newName);
             $data['profile_photo'] = 'uploads/profiles/' . $newName;
         }
 
