@@ -74,8 +74,6 @@
     <?= view('layouts/modals/auth_modal') ?>
 
     <!-- Additional Scripts -->
-    <?php if (isset($additionalScripts)): ?>
-        <?= $additionalScripts ?>
-    <?php endif; ?>
+    <?= $this->renderSection('additionalScripts') ?>
 </body>
 </html>

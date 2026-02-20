@@ -63,9 +63,10 @@ class ChapterController extends BaseController
             'prev_chapter' => $this->chapterModel->getPreviousChapter($chapter['story_id'], $chapter['chapter_number']),
             'comments' => $this->commentModel->getCommentsByChapter($id),
             'total_comments' => $this->commentModel->getTotalCommentsByChapter($id),
+            'all_chapters' => $this->chapterModel->getChaptersByStory($chapter['story_id']),
         ];
 
-        return view('chapter/read', $data);
+        return view('pages/read-chapter', $data);
     }
 
     /**

@@ -26,8 +26,8 @@ $routes->post('/story/(:num)/rate', 'StoryController::rate/$1');
 $routes->get('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
 $routes->get('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
 
-// Chapters
 $routes->get('/chapter/(:num)', 'ChapterController::read/$1');
+$routes->get('/read-chapter/(:num)', 'ChapterController::read/$1');
 $routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
 
 // User/Author Profile

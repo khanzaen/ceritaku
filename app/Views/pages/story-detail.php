@@ -114,7 +114,7 @@
                                 <p class="text-sm font-semibold text-slate-900">Bab <?= (int)$chapter['chapter_number'] ?> • <?= esc($chapter['title']) ?></p>
                                 <p class="text-xs text-slate-500">Updated <?= date('d M Y', strtotime($chapter['created_at'])) ?></p>
                             </div>
-                            <a href="<?= base_url('/read/' . $story['id'] . '/' . $chapter['chapter_number']) ?>" class="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
+                            <a href="<?= base_url('/read-chapter/' . $chapter['id']) ?>" class="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
                                 Baca <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </a>
                         </li>
