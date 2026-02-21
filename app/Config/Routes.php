@@ -19,7 +19,14 @@ $routes->group('auth', function($routes) {
     $routes->get('logout', 'AuthController::logout');
 });
 
-// Stories
+// Stories - Rute untuk Create Story
+$routes->get('/write', 'StoryController::write');
+$routes->get('/create-story', 'StoryController::create');
+$routes->post('/create-story', 'StoryController::save');
+$routes->get('/my-stories', 'StoryController::myStories');
+$routes->get('/story/edit/(:num)', 'StoryController::edit/$1');
+$routes->post('/story/update/(:num)', 'StoryController::update/$1');
+
 $routes->get('/discover', 'StoryController::discover');
 $routes->get('/story/(:num)', 'StoryController::detail/$1');
 $routes->post('/story/(:num)/rate', 'StoryController::rate/$1');
@@ -62,3 +69,6 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->post('users/role/(:num)', 'Admin\UserManagement::changeRole/$1');
     $routes->post('users/delete/(:num)', 'Admin\UserManagement::delete/$1');
 });
+
+$routes->get('auth/google', 'AuthController::googleRedirect');
+$routes->get('auth/google-callback', 'AuthController::googleCallback');

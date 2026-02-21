@@ -29,7 +29,377 @@ class StoryController extends BaseController
     }
 
     /**
-     * Display story detail page
+     * Form create story
+     */
+
+    /**
+     * Halaman tulis
+     */
+    public function write()
+    {
+        // Cek login jika diperlukan
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
+        }
+
+        $data = [
+            'title' => 'Write'
+        ];
+
+        return view('pages/write', $data);
+    }
+    public function create()
+    {
+        // Cek login
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login')->with('error', 'Silakan login untuk membuat cerita');
+        }
+
+        $data = [
+            'title' => 'Write' 
+        ];
+
+        return view('pages/create-story', $data);
+    }
+
+    /**
+     * Simpan story
+     */
+    public function save()
+    {
+        // Cek login
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
+        }
+
+        // Validasi input
+        $rules = [
+            'title' => [
+                'rules' => 'required|min_length[3]|max_length[150]',
+                'errors' => [
+                    'required' => 'Judul cerita harus diisi',
+                    'min_length' => 'Judul minimal 3 karakter',
+                    'max_length' => 'Judul maksimal 150 karakter'
+                ]
+            ],
+            'synopsis' => [
+                'rules' => 'required|min_length[10]',
+                'errors' => [
+                    'required' => 'Deskripsi cerita harus diisi',
+                    'min_length' => 'Deskripsi minimal 10 karakter'
+                ]
+            ],
+            'genre' => [
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Pilih minimal 1 genre'
+                ]
+            ],
+            'status' => [
+                'rules' => 'required|in_list[ongoing,completed,hiatus]',
+                'errors' => [
+                    'required' => 'Pilih status cerita',
+                    'in_list' => 'Status tidak valid'
+                ]
+            ],
+            'cover' => [
+                'rules' => 'if_exist|max_size[cover,5120]|is_image[cover]|mime_in[cover,image/jpg,image/jpeg,image/png]',
+                'errors' => [
+                    'max_size' => 'Ukuran cover maksimal 5MB',
+                    'is_image' => 'File harus berupa gambar',
+                    'mime_in'  => 'Format harus JPG atau PNG',
+                ]
+            ]
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $userId = session()->get('user_id');
+
+        // Upload cover image
+        $coverPath = null;
+        $cover = $this->request->getFile('cover');
+
+        if ($cover && $cover->isValid() && !$cover->hasMoved()) {
+            if ($cover->getSize() > 5 * 1024 * 1024) {
+                return redirect()->back()->withInput()->with('error', 'Ukuran file maksimal 5MB');
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($cover->getMimeType(), $allowedTypes)) {
+                return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
+            }
+
+            // Pastikan folder tujuan ada
+            $uploadPath = FCPATH . 'uploads/covers';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $newName = $cover->getRandomName();
+
+            // Gunakan FCPATH agar file masuk ke public/uploads/covers/
+            $cover->move($uploadPath, $newName);
+
+            // Simpan path relatif dari public/ agar konsisten dengan method update()
+            $coverPath = 'covers/' . $newName;
+
+            log_message('debug', 'File uploaded: ' . $newName);
+        }
+        // Proses genre - gabungkan menjadi string dengan koma
+        $genres = $this->request->getPost('genre');
+        $genresString = implode(',', $genres);
+
+        // Mapping publication_status dari form
+        $publicationStatus = $this->request->getPost('status');
+        $publicationStatusMap = [
+            'ongoing' => 'Ongoing',
+            'completed' => 'Completed',
+            'hiatus' => 'On Hiatus'
+        ];
+
+        // Status sistem - bisa DRAFT atau PUBLISHED
+        $isDraft = $this->request->getPost('save_draft') ? true : false;
+        $systemStatus = $isDraft ? 'DRAFT' : 'PUBLISHED';
+
+        // Data story
+        $storyData = [
+            'title' => $this->request->getPost('title'),
+            'author_id' => $userId,
+            'description' => $this->request->getPost('synopsis'),
+            'cover_image' => $coverPath, // Sekarang hanya berisi nama file
+            'genres' => $genresString,
+            'status' => $systemStatus,
+            'publication_status' => $publicationStatusMap[$publicationStatus] ?? 'Ongoing',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        // Gunakan transaksi database
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            // Insert ke tabel stories
+            $storyId = $this->storyModel->insert($storyData);
+
+            if (!$storyId) {
+                throw new \Exception('Gagal menyimpan cerita');
+            }
+
+            // Proses chapter pertama
+            $chapterContent = $this->request->getPost('chapter-content');
+
+            if (!empty($chapterContent)) {
+                $chapterTitle = $this->request->getPost('chapter-title');
+                if (empty($chapterTitle)) {
+                    $chapterCount = $this->chapterModel->where('story_id', $storyId)->countAllResults();
+                    $chapterTitle = 'Chapter ' . ($chapterCount + 1);
+                }
+
+                $chapterData = [
+                    'story_id' => $storyId,
+                    'title' => $chapterTitle,
+                    'content' => $chapterContent,
+                    'is_premium' => $this->request->getPost('is_premium') ? 1 : 0,
+                    'status' => $systemStatus,
+                    'chapter_number' => 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+
+                if (!$this->chapterModel->insert($chapterData)) {
+                    throw new \Exception('Gagal menyimpan chapter');
+                }
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Gagal menyimpan data');
+            }
+
+            // Hapus file cover jika upload gagal
+            if ($coverPath && !$db->transStatus()) {
+                if (file_exists($coverPath)) {
+                    unlink($coverPath);
+                }
+            }
+
+            // Pesan sukses
+            if ($isDraft) {
+                return redirect()->to('/my-stories')->with('success', 'Cerita berhasil disimpan sebagai draft');
+            } else {
+                return redirect()->to('/my-stories')->with('success', 'Cerita berhasil dipublikasikan!');
+            }
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+
+            if ($coverPath && file_exists(FCPATH . $coverPath)) {
+                unlink(FCPATH . $coverPath);
+            }
+
+            log_message('error', 'Error saving story: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan cerita: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Edit story
+     */
+    public function edit($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story = $this->storyModel->find($id);
+
+        if (!$story) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
+        }
+
+        // Cek apakah user adalah pemilik story
+        if ($story['author_id'] != session()->get('user_id')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke cerita ini');
+        }
+
+        // Parse genres menjadi array
+        $story['genres_array'] = explode(',', $story['genres']);
+
+        $data = [
+            'title' => 'Edit Cerita',
+            'story' => $story,
+            'validation' => \Config\Services::validation()
+        ];
+
+        return view('pages/edit-story', $data);
+    }
+
+    /**
+     * Update story
+     */
+    public function update($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story = $this->storyModel->find($id);
+
+        if (!$story) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
+        }
+
+        // Cek kepemilikan
+        if ($story['author_id'] != session()->get('user_id')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke cerita ini');
+        }
+
+        // Validasi
+        $rules = [
+            'title' => 'required|min_length[3]|max_length[150]',
+            'synopsis' => 'required|min_length[10]',
+            'genre' => 'required',
+            'publication_status' => 'required|in_list[Ongoing,Completed,On Hiatus]'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Proses genre
+        $genres = $this->request->getPost('genre');
+        $genresString = implode(',', $genres);
+
+        // Data update
+        $updateData = [
+            'title' => $this->request->getPost('title'),
+            'description' => $this->request->getPost('synopsis'),
+            'genres' => $genresString,
+            'publication_status' => $this->request->getPost('publication_status'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        // Proses cover baru jika ada
+        $cover = $this->request->getFile('cover');
+        if ($cover && $cover->isValid() && !$cover->hasMoved()) {
+            if ($cover->getSize() > 5 * 1024 * 1024) {
+                return redirect()->back()->withInput()->with('error', 'Ukuran file maksimal 5MB');
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($cover->getMimeType(), $allowedTypes)) {
+                return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
+            }
+
+            // PERBAIKAN: Hapus cover lama dengan path lengkap
+            if ($story['cover_image'] && file_exists(FCPATH . $story['cover_image'])) {
+                unlink(FCPATH . $story['cover_image']);
+            }
+
+            // PERBAIKAN: Upload dengan FCPATH
+            $uploadPath = FCPATH . 'uploads/covers';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $newName = $cover->getRandomName();
+            $cover->move($uploadPath, $newName);
+            $updateData['cover_image'] = 'uploads/covers/' . $newName;
+        }
+
+        if ($this->storyModel->update($id, $updateData)) {
+            return redirect()->to('/my-stories')->with('success', 'Cerita berhasil diperbarui');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui cerita');
+    }
+
+    /**
+     * Daftar story user
+     */
+    public function myStories()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $userId = session()->get('user_id');
+        $stories = $this->storyModel->where('author_id', $userId)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        // Tambahkan badge color untuk setiap story
+        foreach ($stories as &$story) {
+            $statusBadge = [
+                'DRAFT' => ['color' => 'gray', 'text' => 'Draft'],
+                'PUBLISHED' => ['color' => 'green', 'text' => 'Published'],
+                'ARCHIVED' => ['color' => 'red', 'text' => 'Archived']
+            ];
+
+            $pubStatusBadge = [
+                'Ongoing' => ['color' => 'green', 'text' => 'Ongoing'],
+                'Completed' => ['color' => 'blue', 'text' => 'Completed'],
+                'On Hiatus' => ['color' => 'yellow', 'text' => 'Hiatus']
+            ];
+
+            $story['system_badge'] = $statusBadge[$story['status']] ?? ['color' => 'gray', 'text' => $story['status']];
+            $story['publication_badge'] = $pubStatusBadge[$story['publication_status']] ?? ['color' => 'gray', 'text' => $story['publication_status']];
+        }
+
+        $data = [
+            'title' => 'Cerita Saya',
+            'stories' => $stories
+        ];
+
+        return view('pages/my-stories', $data);
+    }
+
+    /**
+     * Detail story
      */
     public function detail($id)
     {
@@ -43,10 +413,17 @@ class StoryController extends BaseController
         $genres = array_filter(array_map('trim', explode(',', $story['genres'] ?? '')));
         $primary_genre = !empty($genres) ? $genres[0] : '';
 
+        // Map publication status untuk badge
+        $publicationStatusBadge = [
+            'Ongoing' => ['color' => 'green', 'text' => 'Ongoing'],
+            'Completed' => ['color' => 'blue', 'text' => 'Completed'],
+            'On Hiatus' => ['color' => 'yellow', 'text' => 'On Hiatus']
+        ];
+
         $data = [
             'title' => $story['title'],
             'story' => $story,
-            // Perbaiki: hanya kirim story_id, biar status default 'PUBLISHED' digunakan
+            'publication_status_badge' => $publicationStatusBadge[$story['publication_status']] ?? ['color' => 'gray', 'text' => 'Unknown'],
             'chapters' => $this->chapterModel->getChaptersByStory($id),
             'reviews' => $this->reviewModel->getReviewsByStory($id, 3),
             'related_stories' => !empty($primary_genre) ? $this->storyModel->getStoriesByGenre($primary_genre, 6) : [],
@@ -65,7 +442,7 @@ class StoryController extends BaseController
     }
 
     /**
-     * Browse/discover stories
+     * Discover story
      */
     public function discover()
     {
@@ -110,7 +487,7 @@ class StoryController extends BaseController
     }
 
     /**
-     * Add story to library
+     * Tambah ke library
      */
     public function addToLibrary($id)
     {
@@ -119,7 +496,7 @@ class StoryController extends BaseController
         }
 
         $userId = session()->get('user_id');
-        
+
         if ($this->libraryModel->addToLibrary($userId, $id)) {
             return redirect()->back()->with('success', 'Cerita berhasil ditambahkan ke library');
         }
@@ -128,7 +505,7 @@ class StoryController extends BaseController
     }
 
     /**
-     * Remove story from library
+     * Hapus dari library
      */
     public function removeFromLibrary($id)
     {
@@ -137,7 +514,7 @@ class StoryController extends BaseController
         }
 
         $userId = session()->get('user_id');
-        
+
         if ($this->libraryModel->removeFromLibrary($userId, $id)) {
             return redirect()->back()->with('success', 'Cerita dihapus dari library');
         }
@@ -146,7 +523,7 @@ class StoryController extends BaseController
     }
 
     /**
-     * Rate a story
+     * Beri rating
      */
     public function rate($id)
     {
@@ -160,7 +537,7 @@ class StoryController extends BaseController
         if ($this->ratingModel->addOrUpdateRating($userId, $id, $rating)) {
             $newAvg = $this->ratingModel->getAverageRating($id);
             return $this->response->setJSON([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Rating berhasil disimpan',
                 'avg_rating' => $newAvg
             ]);

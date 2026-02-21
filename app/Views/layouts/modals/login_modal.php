@@ -44,10 +44,11 @@
                 <div class="mt-4">
                     <p class="text-center text-xs text-gray-400 mb-2">Or continue with <a href="#" class="text-[#6c5ce7] font-medium">Sign up now</a></p>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <button class="flex-1 flex items-center justify-center gap-2 border border-gray-200 py-2 rounded-xl hover:bg-gray-50 transition">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5">
-                            <span class="text-sm font-medium text-gray-600">Google</span>
-                        </button>
+                       <a href="<?= base_url('auth/google') ?>"
+   class="flex-1 flex items-center justify-center gap-2 border border-gray-200 py-2 rounded-xl hover:bg-gray-50 transition">
+    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5">
+    <span class="text-sm font-medium text-gray-600">Google</span>
+</a>
                         <button class="flex-1 flex items-center justify-center gap-2 border border-gray-200 py-2 rounded-xl hover:bg-gray-50 transition">
                             <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5">
                             <span class="text-sm font-medium text-gray-600">Facebook</span>

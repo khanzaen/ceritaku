@@ -17,7 +17,9 @@ class StoryModel extends Model
         'author_id',
         'description',
         'cover_image',
-        'status'
+        'genres',
+        'status',
+        'publication_status'
     ];
 
     // Dates
@@ -30,9 +32,11 @@ class StoryModel extends Model
     protected $validationRules      = [
         'title'       => 'required|min_length[3]|max_length[150]',
         'author_id'   => 'required|integer',
-        'genres'      => 'required|max_length[50]',
+        'genres'      => 'required|max_length[255]',
         'description' => 'permit_empty',
-        'status'      => 'in_list[DRAFT,PENDING_REVIEW,PUBLISHED,ARCHIVED]'
+        'cover_image' => 'permit_empty|max_length[255]',
+        'status'      => 'in_list[DRAFT,PUBLISHED,ARCHIVED]',
+        'publication_status' => 'in_list[Ongoing,Completed,On Hiatus]'
     ];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
@@ -127,7 +131,7 @@ class StoryModel extends Model
     }
 
     /**
-     * Get stories by genre
+     * Get stories by genre (string search)
      */
     public function getStoriesByGenre(string $genreName, int $limit = null)
     {
@@ -145,6 +149,39 @@ class StoryModel extends Model
         }
 
         return $builder->findAll();
+    }
+
+    /**
+     * Get stories by publication status (Ongoing/Completed/On Hiatus)
+     */
+    public function getStoriesByPublicationStatus(string $publicationStatus, int $limit = null)
+    {
+        $builder = $this->select('stories.*, users.name as author_name, AVG(ratings.rating) as avg_rating')
+            ->join('users', 'users.id = stories.author_id')
+            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->where('stories.status', 'PUBLISHED')
+            ->where('stories.publication_status', $publicationStatus)
+            ->groupBy('stories.id')
+            ->orderBy('stories.created_at', 'DESC');
+
+        if ($limit) {
+            $builder->limit($limit);
+        }
+
+        return $builder->findAll();
+    }
+
+    /**
+     * Update publication status
+     */
+    public function updatePublicationStatus(int $storyId, string $publicationStatus)
+    {
+        $allowedStatus = ['Ongoing', 'Completed', 'On Hiatus'];
+        if (!in_array($publicationStatus, $allowedStatus)) {
+            return false;
+        }
+
+        return $this->update($storyId, ['publication_status' => $publicationStatus]);
     }
 
     /**
@@ -192,7 +229,6 @@ class StoryModel extends Model
 
     /**
      * Get top stories this week based on rating and views
-     * Ranking criteria: views minggu ini (primary) + rating (secondary)
      */
     public function getTopStoriesThisWeek(int $limit = 10)
     {
@@ -214,96 +250,5 @@ class StoryModel extends Model
             ->orderBy('avg_rating', 'DESC')
             ->limit($limit)
             ->findAll();
-    }
-
-    /**
-     * Get genres untuk story tertentu
-     */
-    public function getStoryGenres(int $storyId)
-    {
-        return $this->db->table('story_genres')
-            ->select('genres.*')
-            ->join('genres', 'genres.id = story_genres.genre_id')
-            ->where('story_genres.story_id', $storyId)
-            ->get()
-            ->getResultArray();
-    }
-
-    /**
-     * Set genres untuk story (replace existing)
-     */
-    public function setStoryGenres(int $storyId, array $genreIds)
-    {
-        // Hapus genres lama
-        $this->db->table('story_genres')->where('story_id', $storyId)->delete();
-        
-        // Insert genres baru
-        $data = [];
-        foreach ($genreIds as $genreId) {
-            $data[] = [
-                'story_id' => $storyId,
-                'genre_id' => $genreId,
-            ];
-        }
-        
-        if (!empty($data)) {
-            $this->db->table('story_genres')->insertBatch($data);
-        }
-        
-        return true;
-    }
-
-    /**
-     * Add single genre ke story
-     */
-    public function addGenre(int $storyId, int $genreId)
-    {
-        // Check apakah sudah ada
-        $existing = $this->db->table('story_genres')
-            ->where('story_id', $storyId)
-            ->where('genre_id', $genreId)
-            ->countAllResults();
-        
-        if ($existing === 0) {
-            return $this->db->table('story_genres')->insert([
-                'story_id' => $storyId,
-                'genre_id' => $genreId,
-            ]);
-        }
-        
-        return true;
-    }
-
-    /**
-     * Remove genre dari story
-     */
-    public function removeGenre(int $storyId, int $genreId)
-    {
-        return $this->db->table('story_genres')
-            ->where('story_id', $storyId)
-            ->where('genre_id', $genreId)
-            ->delete();
-    }
-
-    /**
-     * Get stories by genre (dari junction table)
-     */
-    public function getStoriesByGenreId(int $genreId, int $limit = null)
-    {
-        $builder = $this->select('stories.*, users.name as author_name, AVG(ratings.rating) as avg_rating, COUNT(DISTINCT ratings.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
-            ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
-            ->join('user_library', 'user_library.story_id = stories.id', 'left')
-            ->join('story_genres', 'story_genres.story_id = stories.id')
-            ->where('story_genres.genre_id', $genreId)
-            ->where('stories.status', 'PUBLISHED')
-            ->groupBy('stories.id')
-            ->orderBy('stories.created_at', 'DESC');
-        
-        if ($limit) {
-            $builder->limit($limit);
-        }
-        
-        return $builder->findAll();
     }
 }

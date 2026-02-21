@@ -20,6 +20,8 @@ class UserModel extends Model
         'role',
         'bio',
         'profile_photo',
+        'provider',
+        'provider_id',
         'is_verified'
     ];
 
@@ -42,7 +44,7 @@ class UserModel extends Model
         'name'     => 'required|min_length[3]|max_length[100]',
         'email'    => 'required|valid_email|is_unique[users.email,id,{id}]',
         'username' => 'permit_empty|alpha_numeric|min_length[3]|max_length[50]|is_unique[users.username,id,{id}]',
-        'password' => 'required|min_length[8]',
+        'password' => 'permit_empty|min_length[8]',
         'role'     => 'in_list[USER,ADMIN]'
     ];
     protected $validationMessages   = [];
@@ -146,7 +148,63 @@ class UserModel extends Model
         
         return $user;
     }
+    /**
+ * Cari user berdasarkan provider + provider_id
+ */
+public function getUserByProvider(string $provider, string $providerId): ?array
+{
+    $db = \Config\Database::connect();
+    return $db->table($this->table)
+        ->where('provider', $provider)
+        ->where('provider_id', $providerId)
+        ->get()
+        ->getRowArray() ?: null;
+}
 
+/**
+ * Cari atau buat user dari OAuth provider.
+ * Alur:
+ * 1. Ada provider_id → langsung login
+ * 2. Ada email tapi belum link → link provider ke akun lama
+ * 3. Belum ada sama sekali → register otomatis tanpa password
+ */
+public function findOrCreateFromProvider(array $data): array|false
+{
+    $db = \Config\Database::connect();
+
+    // 1. Sudah pernah login dengan provider ini
+    $user = $this->getUserByProvider($data['provider'], $data['provider_id']);
+    if ($user) return $user;
+
+    // 2. Email sudah terdaftar → link provider
+    $existing = $db->table($this->table)->where('email', $data['email'])->get()->getRowArray();
+    if ($existing) {
+        $db->table($this->table)->where('id', $existing['id'])->update([
+            'provider'    => $data['provider'],
+            'provider_id' => $data['provider_id'],
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+        return $db->table($this->table)->where('id', $existing['id'])->get()->getRowArray();
+    }
+
+    // 3. User baru — register otomatis
+    $inserted = $db->table($this->table)->insert([
+        'name'          => $data['name'],
+        'email'         => $data['email'],
+        'password'      => null,
+        'provider'      => $data['provider'],
+        'provider_id'   => $data['provider_id'],
+        'profile_photo' => $data['profile_photo'] ?? null,
+        'role'          => 'USER',
+        'is_verified'   => 1, // email Google sudah verified
+        'created_at'    => date('Y-m-d H:i:s'),
+        'updated_at'    => date('Y-m-d H:i:s'),
+    ]);
+
+    if (!$inserted) return false;
+
+    return $db->table($this->table)->where('id', $db->insertID())->get()->getRowArray();
+}
     /**
      * Create new user with validation
      * Returns user array if successful, false with errors otherwise

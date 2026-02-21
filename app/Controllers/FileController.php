@@ -25,10 +25,8 @@ class FileController extends BaseController
         // Sanitasi path untuk mencegah directory traversal
         $filePath = str_replace(['..', '\\'], ['', '/'], $filePath);
         
-        // Path lengkap file: writable/uploads/{covers|profiles}/filename
-        $fullPath = WRITEPATH . 'uploads/' . $filePath;
-        
-        // Cek apakah file ada
+        // Path lengkap file: hanya dari public/uploads
+        $fullPath = FCPATH . 'uploads/' . $filePath;
         if (!is_file($fullPath)) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException();
         }

@@ -19,7 +19,10 @@ class ChapterModel extends Model
         'content',
         'is_premium',
         'status',
-        'view_count'
+        'created_at',
+        'updated_at'
+        // 'author_note' - DIHAPUS karena tidak ada di tabel
+        // 'view_count' - DIHAPUS karena sudah dihapus
     ];
 
     // Dates
@@ -34,8 +37,9 @@ class ChapterModel extends Model
         'title'          => 'required|min_length[3]|max_length[150]',
         'chapter_number' => 'required|integer',
         'content'        => 'required',
-        'is_premium'     => 'in_list[0,1]',
-        'status'         => 'in_list[DRAFT,PUBLISHED,ARCHIVED]'
+        'is_premium'     => 'permit_empty|in_list[0,1]',
+        'status'         => 'required|in_list[DRAFT,PUBLISHED,ARCHIVED]'
+        // 'author_note' - DIHAPUS
     ];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
@@ -43,8 +47,19 @@ class ChapterModel extends Model
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
+    protected $beforeInsert   = ['setDefaultValues'];
     protected $beforeUpdate   = [];
+
+    /**
+     * Set default values before insert
+     */
+    protected function setDefaultValues(array $data)
+    {
+        if (!isset($data['data']['is_premium'])) {
+            $data['data']['is_premium'] = 0;
+        }
+        return $data;
+    }
 
     /**
      * Get chapters by story
@@ -94,20 +109,6 @@ class ChapterModel extends Model
             ->where('status', 'PUBLISHED')
             ->orderBy('chapter_number', 'DESC')
             ->first();
-    }
-
-    /**
-     * Increment view count
-     */
-    public function incrementViewCount(int $chapterId): bool
-    {
-        $chapter = $this->find($chapterId);
-        if ($chapter) {
-            return $this->update($chapterId, [
-                'view_count' => $chapter['view_count'] + 1
-            ]);
-        }
-        return false;
     }
 
     /**

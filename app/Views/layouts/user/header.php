@@ -31,7 +31,7 @@ $current_uri = uri_string();
                 <a href="<?= base_url('/discover') ?>" class="text-sm font-bold <?= strpos($current_uri, 'discover') !== false ? 'text-accent' : 'text-slate-600 hover:text-accent'; ?> transition-colors">
                     Discover
                 </a>
-                <a href="<?= base_url('/') ?>" class="text-sm font-bold text-slate-600 hover:text-accent transition-colors">
+                <a href="<?= base_url('/write') ?>" class="text-sm font-bold text-slate-600 hover:text-accent transition-colors">
                     Write
                 </a>
                 <a href="<?= base_url('/') ?>" class="text-sm font-bold text-slate-600 hover:text-accent transition-colors">

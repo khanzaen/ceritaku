@@ -48,7 +48,6 @@ class ChapterController extends BaseController
         // Only track if not recently viewed
         if (!$userId || !$this->viewModel->hasRecentView($userId, null, $id, 30)) {
             $this->viewModel->trackView(null, $id, $userId, $ipAddress);
-            $this->chapterModel->incrementViewCount($id);
         }
 
         // Update user progress

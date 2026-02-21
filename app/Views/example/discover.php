@@ -368,7 +368,7 @@ foreach($trending_genres as $genre) {
 
     <section class="mb-14">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-primary">Top picks this week</h2>
+        <h2 class="text-2xl md:text-3xl font-bold text-primary">Cerita teratas minggu ini</h2>
         <a href="discover.php" class="text-sm font-semibold text-accent hover:underline">See all →</a>
       </div>
       <div class="bg-white border border-border rounded-2xl shadow-sm p-5 overflow-x-auto">
