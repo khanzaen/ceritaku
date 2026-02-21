@@ -26,6 +26,7 @@ $routes->post('/create-story', 'StoryController::save');
 $routes->get('/my-stories', 'StoryController::myStories');
 $routes->get('/story/edit/(:num)', 'StoryController::edit/$1');
 $routes->post('/story/update/(:num)', 'StoryController::update/$1');
+$routes->post('/story/delete/(:num)', 'StoryController::delete/$1');
 
 $routes->get('/discover', 'StoryController::discover');
 $routes->get('/story/(:num)', 'StoryController::detail/$1');
@@ -61,7 +62,7 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->get('stories', 'Admin\StoryManagement::index');
     $routes->get('stories/approve/(:num)', 'Admin\StoryManagement::approve/$1');
     $routes->get('stories/archive/(:num)', 'Admin\StoryManagement::archive/$1');
-    $routes->post('stories/delete/(:num)', 'Admin\StoryManagement::delete/$1');
+    $routes->delete('stories/delete/(:num)', 'Admin\StoryManagement::delete/$1');
     
     // User Management
     $routes->get('users', 'Admin\UserManagement::index');

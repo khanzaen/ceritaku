@@ -68,9 +68,9 @@
     <!-- Current Cover -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <label class="block text-sm font-bold text-primary mb-4">Current Cover</label>
-      <?php if($story['cover_image'] && file_exists($story['cover_image'])): ?>
+      <?php if($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])): ?>
         <div class="mb-4">
-          <img src="<?= base_url($story['cover_image']) ?>" alt="Current cover" class="w-32 h-40 object-cover rounded-lg border border-border">
+          <img src="<?= base_url('uploads/' . $story['cover_image']) ?>" alt="Current cover" class="w-32 h-40 object-cover rounded-lg border border-border">
         </div>
       <?php else: ?>
         <p class="text-sm text-slate-500 mb-4">No cover image</p>
@@ -78,9 +78,9 @@
 
       <label class="block text-sm font-bold text-primary mb-2">Update Cover (Optional)</label>
       <div id="cover-upload-area" class="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-accent transition-colors cursor-pointer">
-        <span class="material-symbols-outlined text-4xl text-slate-400 mb-2 block">upload</span>
-        <p class="text-sm text-slate-600 mb-1">Click to upload new cover</p>
-        <p class="text-xs text-slate-500">PNG, JPG up to 5MB</p>
+        <span id="cover-icon" class="material-symbols-outlined text-4xl text-slate-400 mb-2 block">upload</span>
+        <p id="cover-label-text" class="text-sm text-slate-600 mb-1">Click to upload new cover</p>
+        <p id="cover-sub-text" class="text-xs text-slate-500">PNG, JPG up to 5MB</p>
         <input type="file" name="cover" accept="image/*" id="cover-upload" class="hidden" />
       </div>
     </div>
@@ -129,11 +129,21 @@
   coverInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
       const fileName = e.target.files[0].name;
-      coverUploadArea.innerHTML = `
-        <span class="material-symbols-outlined text-4xl text-accent mb-2 block">check_circle</span>
-        <p class="text-sm text-accent font-semibold mb-1">${fileName}</p>
-        <p class="text-xs text-slate-500">Click to change image</p>
-      `;
+      // ✅ Hanya update teks & ikon, JANGAN replace innerHTML
+      // karena akan menghapus <input name="cover"> dari DOM
+      const icon = document.getElementById('cover-icon');
+      const labelText = document.getElementById('cover-label-text');
+      const subText = document.getElementById('cover-sub-text');
+
+      icon.textContent = 'check_circle';
+      icon.classList.remove('text-slate-400');
+      icon.classList.add('text-accent');
+
+      labelText.textContent = fileName;
+      labelText.classList.add('text-accent', 'font-semibold');
+      labelText.classList.remove('text-slate-600');
+
+      subText.textContent = 'Click to change image';
     }
   });
 </script>

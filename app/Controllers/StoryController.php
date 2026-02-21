@@ -143,7 +143,7 @@ class StoryController extends BaseController
             // Gunakan FCPATH agar file masuk ke public/uploads/covers/
             $cover->move($uploadPath, $newName);
 
-            // Simpan path relatif dari public/ agar konsisten dengan method update()
+            // Simpan format covers/namafile.jpg
             $coverPath = 'covers/' . $newName;
 
             log_message('debug', 'File uploaded: ' . $newName);
@@ -166,15 +166,13 @@ class StoryController extends BaseController
 
         // Data story
         $storyData = [
-            'title' => $this->request->getPost('title'),
-            'author_id' => $userId,
-            'description' => $this->request->getPost('synopsis'),
-            'cover_image' => $coverPath, // Sekarang hanya berisi nama file
-            'genres' => $genresString,
-            'status' => $systemStatus,
+            'title'              => $this->request->getPost('title'),
+            'author_id'          => $userId,
+            'description'        => $this->request->getPost('synopsis'),
+            'cover_image'        => $coverPath,
+            'genres'             => $genresString,
+            'status'             => $systemStatus,
             'publication_status' => $publicationStatusMap[$publicationStatus] ?? 'Ongoing',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
         ];
 
         // Gunakan transaksi database
@@ -189,7 +187,7 @@ class StoryController extends BaseController
                 throw new \Exception('Gagal menyimpan cerita');
             }
 
-            // Proses chapter pertama
+            // Proses chapter pertama jika ada
             $chapterContent = $this->request->getPost('chapter-content');
 
             if (!empty($chapterContent)) {
@@ -301,10 +299,18 @@ class StoryController extends BaseController
 
         // Validasi
         $rules = [
-            'title' => 'required|min_length[3]|max_length[150]',
-            'synopsis' => 'required|min_length[10]',
-            'genre' => 'required',
-            'publication_status' => 'required|in_list[Ongoing,Completed,On Hiatus]'
+            'title'              => 'required|min_length[3]|max_length[150]',
+            'synopsis'           => 'required|min_length[10]',
+            'genre'              => 'required',
+            'publication_status' => 'required|in_list[Ongoing,Completed,On Hiatus]',
+            'cover'              => [
+                'rules'  => 'if_exist|max_size[cover,5120]|is_image[cover]|mime_in[cover,image/jpg,image/jpeg,image/png]',
+                'errors' => [
+                    'max_size' => 'Ukuran cover maksimal 5MB',
+                    'is_image' => 'File harus berupa gambar',
+                    'mime_in'  => 'Format harus JPG atau PNG',
+                ]
+            ]
         ];
 
         if (!$this->validate($rules)) {
@@ -317,11 +323,10 @@ class StoryController extends BaseController
 
         // Data update
         $updateData = [
-            'title' => $this->request->getPost('title'),
-            'description' => $this->request->getPost('synopsis'),
-            'genres' => $genresString,
+            'title'              => $this->request->getPost('title'),
+            'description'        => $this->request->getPost('synopsis'),
+            'genres'             => $genresString,
             'publication_status' => $this->request->getPost('publication_status'),
-            'updated_at' => date('Y-m-d H:i:s')
         ];
         // Proses cover baru jika ada
         $cover = $this->request->getFile('cover');
@@ -335,12 +340,12 @@ class StoryController extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
             }
 
-            // PERBAIKAN: Hapus cover lama dengan path lengkap
-            if ($story['cover_image'] && file_exists(FCPATH . $story['cover_image'])) {
-                unlink(FCPATH . $story['cover_image']);
+            // Hapus cover lama
+            if ($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])) {
+                unlink(FCPATH . 'uploads/' . $story['cover_image']);
             }
 
-            // PERBAIKAN: Upload dengan FCPATH
+            // Upload dengan FCPATH
             $uploadPath = FCPATH . 'uploads/covers';
             if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
@@ -348,7 +353,7 @@ class StoryController extends BaseController
 
             $newName = $cover->getRandomName();
             $cover->move($uploadPath, $newName);
-            $updateData['cover_image'] = 'uploads/covers/' . $newName;
+            $updateData['cover_image'] = 'covers/' . $newName;
         }
 
         if ($this->storyModel->update($id, $updateData)) {
@@ -544,5 +549,41 @@ class StoryController extends BaseController
         }
 
         return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan rating']);
+    }
+
+    /**
+     * Hapus story milik user
+     */
+    public function delete($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story = $this->storyModel->find($id);
+
+        if (!$story) {
+            return redirect()->to('/my-stories')->with('error', 'Cerita tidak ditemukan');
+        }
+
+        // Pastikan hanya pemilik yang bisa hapus
+        if ($story['author_id'] != session()->get('user_id')) {
+            return redirect()->to('/my-stories')->with('error', 'Anda tidak memiliki akses untuk menghapus cerita ini');
+        }
+
+        // Hapus file cover jika ada
+        if ($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])) {
+            unlink(FCPATH . 'uploads/' . $story['cover_image']);
+        }
+
+        // Hapus semua chapter terkait
+        $this->chapterModel->where('story_id', $id)->delete();
+
+        // Hapus story
+        if ($this->storyModel->delete($id)) {
+            return redirect()->to('/my-stories')->with('success', 'Cerita berhasil dihapus');
+        }
+
+        return redirect()->to('/my-stories')->with('error', 'Gagal menghapus cerita');
     }
 }
