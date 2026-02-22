@@ -34,10 +34,7 @@ class StoryController extends BaseController
      */
     public function write()
     {
-        // Cek login jika diperlukan
-        if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
-        }
+
 
         $data = [
             'title' => 'Write'
@@ -322,46 +319,133 @@ class StoryController extends BaseController
         $genres = $this->request->getPost('genre');
         $genresString = implode(',', $genres);
 
-        // Data update
+        // Data update story
         $updateData = [
             'title'              => $this->request->getPost('title'),
             'description'        => $this->request->getPost('synopsis'),
             'genres'             => $genresString,
             'publication_status' => $this->request->getPost('publication_status'),
         ];
+
         // Proses cover baru jika ada
         $cover = $this->request->getFile('cover');
         if ($cover && $cover->isValid() && !$cover->hasMoved()) {
             if ($cover->getSize() > 5 * 1024 * 1024) {
                 return redirect()->back()->withInput()->with('error', 'Ukuran file maksimal 5MB');
             }
-
             $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
             if (!in_array($cover->getMimeType(), $allowedTypes)) {
                 return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
             }
-
-            // Hapus cover lama
             if ($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])) {
                 unlink(FCPATH . 'uploads/' . $story['cover_image']);
             }
-
-            // Upload dengan FCPATH
             $uploadPath = FCPATH . 'uploads/covers';
             if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
             }
-
             $newName = $cover->getRandomName();
             $cover->move($uploadPath, $newName);
             $updateData['cover_image'] = 'covers/' . $newName;
         }
 
-        if ($this->storyModel->update($id, $updateData)) {
-            return redirect()->to('/my-stories')->with('success', 'Cerita berhasil diperbarui');
-        }
+        $db = \Config\Database::connect();
+        $db->transStart();
 
-        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui cerita');
+        try {
+            // Update story
+            if (!$this->storyModel->update($id, $updateData)) {
+                throw new \Exception('Gagal memperbarui cerita');
+            }
+
+            // ── 1. Hapus chapter yang ditandai delete ──────────────────────
+            $deleteIds = $this->request->getPost('delete_chapter_ids');
+            if (!empty($deleteIds)) {
+                foreach ((array)$deleteIds as $chapterId) {
+                    $chapterId = (int)$chapterId;
+                    if ($chapterId > 0) {
+                        $this->chapterModel
+                            ->where('story_id', $id)
+                            ->where('id', $chapterId)
+                            ->delete();
+                    }
+                }
+            }
+
+            // ── 2. Update chapter yang sudah ada ───────────────────────────
+            $existingIds     = (array)($this->request->getPost('existing_chapter_id')      ?? []);
+            $existingTitles  = (array)($this->request->getPost('existing_chapter_title')   ?? []);
+            $existingContent = (array)($this->request->getPost('existing_chapter_content') ?? []);
+            $existingStatus  = (array)($this->request->getPost('existing_chapter_status')  ?? []);
+
+            foreach ($existingIds as $i => $chapterId) {
+                $chapterId = (int)$chapterId;
+                if ($chapterId <= 0) continue;
+
+                $existingChapter = $this->chapterModel
+                    ->where('story_id', $id)
+                    ->where('id', $chapterId)
+                    ->first();
+                if (!$existingChapter) continue;
+
+                $chTitle   = trim($existingTitles[$i]  ?? '');
+                $chContent = trim($existingContent[$i] ?? '');
+                $chStatus  = in_array($existingStatus[$i] ?? '', ['DRAFT', 'PUBLISHED'])
+                             ? $existingStatus[$i]
+                             : $existingChapter['status'];
+
+                if ($chTitle !== '' && $chContent !== '') {
+                    $this->chapterModel->update($chapterId, [
+                        'title'      => $chTitle,
+                        'content'    => $chContent,
+                        'status'     => $chStatus,
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            // ── 3. Insert chapter baru ─────────────────────────────────────
+            $newTitles   = (array)($this->request->getPost('new_chapter_title')   ?? []);
+            $newContents = (array)($this->request->getPost('new_chapter_content') ?? []);
+            $newStatuses = (array)($this->request->getPost('new_chapter_status')  ?? []);
+
+            $chapterCount = $this->chapterModel->where('story_id', $id)->countAllResults();
+
+            foreach ($newTitles as $i => $newTitle) {
+                $newTitle   = trim($newTitle);
+                $newContent = trim($newContents[$i] ?? '');
+                $newSt      = in_array($newStatuses[$i] ?? '', ['DRAFT', 'PUBLISHED'])
+                              ? $newStatuses[$i]
+                              : 'DRAFT';
+
+                if ($newTitle !== '' && $newContent !== '') {
+                    $chapterCount++;
+                    $this->chapterModel->insert([
+                        'story_id'       => $id,
+                        'title'          => $newTitle,
+                        'chapter_number' => $chapterCount,
+                        'content'        => $newContent,
+                        'status'         => $newSt,
+                        'is_premium'     => 0,
+                        'created_at'     => date('Y-m-d H:i:s'),
+                        'updated_at'     => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Transaksi database gagal');
+            }
+
+            return redirect()->to('/story/edit/' . $id)->with('success', 'Cerita berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Error updating story: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui cerita: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -19,7 +19,7 @@ $routes->group('auth', function($routes) {
     $routes->get('logout', 'AuthController::logout');
 });
 
-// Stories - Rute untuk Create Story
+// Stories - Rute
 $routes->get('/write', 'StoryController::write');
 $routes->get('/create-story', 'StoryController::create');
 $routes->post('/create-story', 'StoryController::save');
@@ -29,7 +29,6 @@ $routes->post('/story/update/(:num)', 'StoryController::update/$1');
 $routes->post('/story/delete/(:num)', 'StoryController::delete/$1');
 
 $routes->get('/discover', 'StoryController::discover');
-$routes->get('/discover/all', 'StoryController::allStories');
 $routes->get('/story/(:num)', 'StoryController::detail/$1');
 $routes->post('/story/(:num)/rate', 'StoryController::rate/$1');
 $routes->get('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
@@ -50,7 +49,7 @@ $routes->post('/user-post/comment', 'UserPostCommentController::add');
 // User Profile & Activity
 $routes->get('/profile', 'UserController::profile');
 $routes->get('/profile/(:num)', 'UserController::profile/$1');
-$routes->get('/library', 'UserController::library');
+$routes->get('/my-library', 'UserLibraryController::myLibrary');
 $routes->get('/my-reviews', 'UserController::reviews');
 $routes->get('/my-comments', 'UserController::comments');
 $routes->get('/profile/edit', 'UserController::editProfile');

@@ -154,11 +154,26 @@
                                 <p class="text-sm font-semibold text-slate-900">Chapter <?= (int)$chapter['chapter_number'] ?> • <?= esc($chapter['title']) ?></p>
                                 <p class="text-xs text-slate-500">Updated <?= date('d M Y', strtotime($chapter['created_at'])) ?></p>
                             </div>
-                            <a href="<?= base_url('/read-chapter/' . $chapter['id']) ?>" class="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
-                                Read <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                            </a>
+                            <?php if (!session()->get('isLoggedIn')): ?>
+                                <button type="button" onclick="openModal('loginModal')" class="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
+                                    Read <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                </button>
+                            <?php else: ?>
+                                <a href="<?= base_url('/read-chapter/' . $chapter['id']) ?>" class="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
+                                    Read <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                </a>
+                            <?php endif; ?>
                         </li>
                     <?php endforeach; ?>
+                <script>
+                function openModal(modalId) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+                }
+                </script>
                 <?php else: ?>
                     <li class="p-4 text-sm text-slate-500">No chapters available yet.</li>
                 <?php endif; ?>

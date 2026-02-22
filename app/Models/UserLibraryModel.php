@@ -16,7 +16,8 @@ class UserLibraryModel extends Model
         'user_id',
         'story_id',
         'progress',
-        'is_reading'
+        'is_reading',
+        'status'
     ];
 
     // Dates
@@ -49,13 +50,14 @@ class UserLibraryModel extends Model
         $builder = $this->select('user_library.*, 
                 stories.title,
                 stories.cover_image,
+                stories.description,
                 users.name as author_name')
             ->join('stories', 'stories.id = user_library.story_id')
             ->join('users', 'users.id = stories.author_id')
             ->where('user_library.user_id', $userId);
 
         if ($isReading !== null) {
-            $builder->where('user_library.is_reading', $isReading ? 1 : 0);
+            $builder->where('user_library.status', $isReading ? 'reading' : 'finished');
         }
 
         return $builder->orderBy('user_library.updated_at', 'DESC')->findAll();
@@ -85,7 +87,8 @@ class UserLibraryModel extends Model
             'user_id'    => $userId,
             'story_id'   => $storyId,
             'progress'   => 0,
-            'is_reading' => 1
+            'is_reading' => 1,
+            'status'     => 'reading'
         ]) !== false;
     }
 
@@ -109,9 +112,20 @@ class UserLibraryModel extends Model
             ->first();
 
         if ($entry) {
-            return $this->update($entry['id'], [
+            // Cek chapter terakhir
+            $chapterModel = new \App\Models\ChapterModel();
+            $lastChapter = $chapterModel->where('story_id', $storyId)
+                ->orderBy('chapter_number', 'DESC')
+                ->first();
+            $isFinished = $lastChapter && $chapterNumber >= $lastChapter['chapter_number'];
+            $updateData = [
                 'progress' => $chapterNumber
-            ]);
+            ];
+            if ($isFinished) {
+                $updateData['status'] = 'finished';
+                $updateData['is_reading'] = 0;
+            }
+            return $this->update($entry['id'], $updateData);
         }
         return false;
     }
@@ -127,7 +141,8 @@ class UserLibraryModel extends Model
 
         if ($entry) {
             return $this->update($entry['id'], [
-                'is_reading' => 0
+                'is_reading' => 0,
+                'status'     => 'finished'
             ]);
         }
         return false;
@@ -141,5 +156,22 @@ class UserLibraryModel extends Model
         return $this->where('user_id', $userId)
             ->where('story_id', $storyId)
             ->first();
+    }
+
+    /**
+     * Get progress percent for a story in user's library
+     * Returns integer percent (0-100)
+     */
+    public function getProgressPercent(int $userId, int $storyId): int
+    {
+        $entry = $this->getProgress($userId, $storyId);
+        if (!$entry) return 0;
+        $chapterModel = new \App\Models\ChapterModel();
+        $totalChapters = $chapterModel->where('story_id', $storyId)->countAllResults();
+        if ($totalChapters <= 0) return 0;
+        $progress = (int)$entry['progress'];
+        $percent = (int) round(($progress / $totalChapters) * 100);
+        // Clamp between 0 and 100
+        return max(0, min(100, $percent));
     }
 }

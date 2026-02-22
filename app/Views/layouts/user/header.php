@@ -78,11 +78,8 @@ $current_uri = uri_string();
                         <a href="<?= base_url('/my-stories') ?>" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                             <span class="material-symbols-outlined text-[18px] mr-2 align-middle">auto_stories</span> My Stories
                         </a>
-                        <a href="<?= base_url('/library') ?>" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <a href="<?= base_url('/my-library') ?>" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                             <span class="material-symbols-outlined text-[18px] mr-2 align-middle">bookmarks</span> My Library
-                        </a>
-                        <a href="<?= base_url('/reviews') ?>" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                            <span class="material-symbols-outlined text-[18px] mr-2 align-middle">rate_review</span> My Reviews
                         </a>
                         <hr class="my-2 border-border dark:border-slate-700">
                         <a href="#" id="logoutBtn" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">

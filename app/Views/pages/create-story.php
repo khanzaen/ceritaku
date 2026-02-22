@@ -21,7 +21,7 @@
     <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
       <ul class="list-disc list-inside">
       <?php foreach(session()->getFlashdata('errors') as $error): ?>
-        <li><?= $error ?></li>
+        <li><?= esc($error) ?></li>
       <?php endforeach; ?>
       </ul>
     </div>
@@ -38,18 +38,24 @@
 
   <form action="<?= site_url('create-story') ?>" method="post" enctype="multipart/form-data" class="space-y-6">
     <?= csrf_field() ?>
-    
+
     <!-- Story Title -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <label for="title" class="block text-sm font-bold text-primary mb-2">Story Title *</label>
-      <input type="text" id="title" name="title" value="<?= old('title') ?>" placeholder="Enter your story title" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" required maxlength="120" />
+      <input type="text" id="title" name="title" value="<?= old('title') ?>"
+             placeholder="Enter your story title"
+             class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm"
+             required maxlength="120" />
       <p class="text-xs text-slate-500 mt-2">Choose a captivating title that represents your story.</p>
     </div>
 
     <!-- Story Description -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <label for="synopsis" class="block text-sm font-bold text-primary mb-2">Story Description *</label>
-      <textarea id="synopsis" name="synopsis" rows="4" placeholder="Write a brief description of your story..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none" required maxlength="1000"><?= old('synopsis') ?></textarea>
+      <textarea id="synopsis" name="synopsis" rows="4"
+                placeholder="Write a brief description of your story..."
+                class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none"
+                required maxlength="1000"><?= old('synopsis') ?></textarea>
       <p class="text-xs text-slate-500 mt-2">A compelling synopsis helps readers discover your story.</p>
     </div>
 
@@ -60,14 +66,16 @@
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-3">Select Genres (Multiple) *</label>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <?php 
-            $genres = ['Romance','Mystery','Fantasy','Drama','Sci-Fi','Thriller','Comedy','Politics','History','Adventure','Horror','Paranormal','Supernatural']; 
+            <?php
+            $genres    = ['Romance','Mystery','Fantasy','Drama','Sci-Fi','Thriller','Comedy','Politics','History','Adventure','Horror','Paranormal','Supernatural'];
             $oldGenres = old('genre') ?: [];
-            foreach($genres as $genre): 
+            foreach($genres as $genre):
               $genreLower = strtolower($genre);
             ?>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="genre[]" value="<?= $genreLower ?>" <?= in_array($genreLower, $oldGenres) ? 'checked' : '' ?> class="w-4 h-4 text-accent rounded focus:ring-2 focus:ring-accent/30" />
+                <input type="checkbox" name="genre[]" value="<?= $genreLower ?>"
+                       <?= in_array($genreLower, $oldGenres) ? 'checked' : '' ?>
+                       class="w-4 h-4 text-accent rounded focus:ring-2 focus:ring-accent/30" />
                 <span class="text-sm text-slate-700"><?= $genre ?></span>
               </label>
             <?php endforeach; ?>
@@ -88,20 +96,33 @@
       </div>
     </div>
 
-    <!-- Story Status (Publication Status) -->
+    <!-- Story Status -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <label class="block text-sm font-bold text-primary mb-4">Story Status *</label>
       <div class="flex flex-wrap gap-3">
+        <?php
+        // FIX 1: Logika radio "Ongoing" yang salah diperbaiki.
+        // Sebelumnya: old('status') == 'ongoing' ? 'checked' : 'checked'
+        // → selalu checked tidak peduli nilai old(). Sekarang default ke
+        //   'ongoing' hanya jika old('status') kosong (form pertama kali dibuka).
+        $oldStatus = old('status', 'ongoing');
+        ?>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="status" value="ongoing" <?= old('status') == 'ongoing' ? 'checked' : 'checked' ?> class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
+          <input type="radio" name="status" value="ongoing"
+                 <?= $oldStatus === 'ongoing' ? 'checked' : '' ?>
+                 class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
           <span class="text-sm text-slate-700">Ongoing</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="status" value="completed" <?= old('status') == 'completed' ? 'checked' : '' ?> class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
+          <input type="radio" name="status" value="completed"
+                 <?= $oldStatus === 'completed' ? 'checked' : '' ?>
+                 class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
           <span class="text-sm text-slate-700">Completed</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="status" value="hiatus" <?= old('status') == 'hiatus' ? 'checked' : '' ?> class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
+          <input type="radio" name="status" value="hiatus"
+                 <?= $oldStatus === 'hiatus' ? 'checked' : '' ?>
+                 class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
           <span class="text-sm text-slate-700">On Hiatus</span>
         </label>
       </div>
@@ -116,17 +137,26 @@
       <div id="chapters-list" class="space-y-4">
         <div class="chapter-block">
           <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
-          <input type="text" name="chapter-title[]" placeholder="e.g., Chapter 1: The Beginning" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
+          <input type="text" name="chapter-title[]"
+                 placeholder="e.g., Chapter 1: The Beginning"
+                 class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
           <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
-          <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
+          <textarea name="chapter-content[]" rows="10"
+                    placeholder="Start writing your chapter here..."
+                    class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
           <div class="flex items-center justify-between mt-2">
             <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
             <span class="text-xs text-slate-500 word-count">0 words</span>
           </div>
-          <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all" style="display:none;">Remove Chapter</button>
+          <!-- FIX 3: tombol Remove disembunyikan pada chapter pertama dan hanya
+               muncul jika ada lebih dari 1 chapter, dikendalikan oleh JS -->
+          <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all hidden">
+            Remove Chapter
+          </button>
         </div>
       </div>
-      <button type="button" id="add-chapter-btn" class="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-all inline-flex items-center gap-2">
+      <button type="button" id="add-chapter-btn"
+              class="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-all inline-flex items-center gap-2">
         <span class="material-symbols-outlined text-base">add</span>
         Add Chapter
       </button>
@@ -134,100 +164,113 @@
 
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-      <button type="submit" name="save_draft" value="1" class="flex-1 px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all inline-flex items-center justify-center gap-2">
+      <button type="submit" name="save_draft" value="1"
+              class="flex-1 px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all inline-flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-base">visibility</span>
         Save as Draft
       </button>
-      <button type="submit" class="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-purple-700 transition-all inline-flex items-center justify-center gap-2">
+      <button type="submit"
+              class="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-purple-700 transition-all inline-flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-base">publish</span>
         Publish
       </button>
     </div>
-    <p class="text-xs text-slate-500 text-center">By creating a story, you agree to our <a href="#" class="text-accent hover:underline">Terms of Service</a> and <a href="#" class="text-accent hover:underline">Content Guidelines</a>.</p>
+    <p class="text-xs text-slate-500 text-center">
+      By creating a story, you agree to our
+      <a href="#" class="text-accent hover:underline">Terms of Service</a> and
+      <a href="#" class="text-accent hover:underline">Content Guidelines</a>.
+    </p>
   </form>
 </main>
 
 <script>
-  // Cover upload handling
+  // ── Cover upload ──────────────────────────────────────────────────────────
   const coverUploadArea = document.getElementById('cover-upload-area');
-  const coverInput = document.getElementById('cover-upload');
-  
-  coverUploadArea.addEventListener('click', () => { 
-    coverInput.click(); 
-  });
-  
+  const coverInput      = document.getElementById('cover-upload');
+
+  coverUploadArea.addEventListener('click', () => { coverInput.click(); });
+
   coverInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      const fileName = e.target.files[0].name;
-      // ✅ Hanya update teks & ikon, JANGAN replace innerHTML
-      // karena akan menghapus <input name="cover"> dari DOM
-      // sehingga file tidak ikut terkirim saat form disubmit
-      const icon = document.getElementById('cover-icon');
-      const labelText = document.getElementById('cover-label-text');
-      const subText = document.getElementById('cover-sub-text');
+    if (!e.target.files.length) return;
+    const fileName  = e.target.files[0].name;
+    const icon      = document.getElementById('cover-icon');
+    const labelText = document.getElementById('cover-label-text');
+    const subText   = document.getElementById('cover-sub-text');
 
-      icon.textContent = 'check_circle';
-      icon.classList.remove('text-slate-400');
-      icon.classList.add('text-accent');
+    icon.textContent = 'check_circle';
+    icon.classList.remove('text-slate-400');
+    icon.classList.add('text-accent');
 
-      labelText.textContent = fileName;
-      labelText.classList.add('text-accent', 'font-semibold');
-      labelText.classList.remove('text-slate-600');
+    labelText.textContent = fileName;
+    labelText.classList.add('text-accent', 'font-semibold');
+    labelText.classList.remove('text-slate-600');
 
-      subText.textContent = 'Click to change image';
-    }
+    subText.textContent = 'Click to change image';
   });
 
-  // Dynamic chapter add/remove
-  const chaptersList = document.getElementById('chapters-list');
+  // ── Chapter helpers ───────────────────────────────────────────────────────
+  const chaptersList  = document.getElementById('chapters-list');
   const addChapterBtn = document.getElementById('add-chapter-btn');
 
   function updateWordCount(textarea, countSpan) {
-    const text = textarea.value.trim();
+    const text  = textarea.value.trim();
     const words = text ? text.split(/\s+/).length : 0;
     countSpan.textContent = words + ' words';
   }
 
+  // FIX 3: Tampilkan tombol Remove hanya jika chapter > 1
+  function refreshRemoveButtons() {
+    const blocks = chaptersList.querySelectorAll('.chapter-block');
+    blocks.forEach((block, idx) => {
+      const btn = block.querySelector('.remove-chapter-btn');
+      if (btn) btn.classList.toggle('hidden', blocks.length === 1);
+    });
+  }
+
+  function initChapterBlock(block) {
+    // FIX 4: word count diinisialisasi untuk setiap block (termasuk yang pertama)
+    const textarea  = block.querySelector('textarea');
+    const countSpan = block.querySelector('.word-count');
+    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
+    updateWordCount(textarea, countSpan); // hitung langsung saat init
+
+    const removeBtn = block.querySelector('.remove-chapter-btn');
+    removeBtn.addEventListener('click', () => {
+      block.remove();
+      refreshRemoveButtons();
+    });
+  }
+
   function addChapterBlock() {
+    const num   = chaptersList.querySelectorAll('.chapter-block').length + 1;
     const block = document.createElement('div');
     block.className = 'chapter-block';
+    // FIX 2: typo 'focus-border-accent' diperbaiki menjadi 'focus:border-accent'
     block.innerHTML = `
       <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
-      <input type="text" name="chapter-title[]" placeholder="e.g., Chapter 2: The Adventure Continues" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
+      <input type="text" name="chapter-title[]"
+             placeholder="e.g., Chapter ${num}: The Adventure Continues"
+             class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
       <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
-      <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus-border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
+      <textarea name="chapter-content[]" rows="10"
+                placeholder="Start writing your chapter here..."
+                class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
       <div class="flex items-center justify-between mt-2">
         <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
         <span class="text-xs text-slate-500 word-count">0 words</span>
       </div>
-      <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all">Remove Chapter</button>
+      <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all">
+        Remove Chapter
+      </button>
     `;
     chaptersList.appendChild(block);
-
-    // Word count handler
-    const textarea = block.querySelector('textarea');
-    const countSpan = block.querySelector('.word-count');
-    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
-
-    // Remove button handler
-    const removeBtn = block.querySelector('.remove-chapter-btn');
-    removeBtn.style.display = 'inline-block';
-    removeBtn.addEventListener('click', () => {
-      block.remove();
-    });
+    initChapterBlock(block);
+    refreshRemoveButtons();
   }
 
-  // Initial chapter block already present
-  chaptersList.querySelectorAll('.chapter-block').forEach(block => {
-    const textarea = block.querySelector('textarea');
-    const countSpan = block.querySelector('.word-count');
-    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
-    // Remove button handler
-    const removeBtn = block.querySelector('.remove-chapter-btn');
-    removeBtn.addEventListener('click', () => {
-      block.remove();
-    });
-  });
+  // Init chapter pertama yang sudah ada di DOM
+  chaptersList.querySelectorAll('.chapter-block').forEach(block => initChapterBlock(block));
+  refreshRemoveButtons();
 
   addChapterBtn.addEventListener('click', addChapterBlock);
 </script>

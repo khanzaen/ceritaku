@@ -10,10 +10,17 @@
       </div>
       <h1 class="text-4xl md:text-5xl font-bold text-primary leading-tight">Share Your Story</h1>
       <p class="text-lg text-slate-600">Write, publish, and reach thousands of readers. Your story deserves to be heard.</p>
-      <a href="/create-story" class="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-accent text-white font-semibold rounded-xl shadow hover:bg-accent-dark transition-colors text-base">
-        <span class="material-symbols-outlined text-lg">edit</span>
-        Start Writing
-      </a>
+      <?php if (session()->get('isLoggedIn')): ?>
+        <a href="/create-story" class="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-accent text-white font-semibold rounded-xl shadow hover:bg-accent-dark transition-colors text-base">
+          <span class="material-symbols-outlined text-lg">edit</span>
+          Start Writing
+        </a>
+      <?php else: ?>
+        <button type="button" onclick="openModal('loginModal')" class="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-accent text-white font-semibold rounded-xl shadow hover:bg-accent-dark transition-colors text-base">
+          <span class="material-symbols-outlined text-lg">edit</span>
+          Start Writing
+        </button>
+      <?php endif; ?>
     </div>
   </section>
 

@@ -30,18 +30,15 @@ class ChapterController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Chapter not found');
         }
 
-        // Check if premium and user has access
-        if ($chapter['is_premium']) {
-            if (!session()->get('isLoggedIn')) {
-                return redirect()->to('/login')->with('error', 'Chapter premium memerlukan login');
-            }
-            // Add premium access check here if needed
+        // Require login for all chapters
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login')->with('error', 'amodalsSilaapageskan_-_- login untuk membaca chapter');
         }
 
         // Track view
         $userId = session()->get('user_id');
         $ipAddress = $this->request->getIPAddress();
-        
+
         // Update user progress
         if ($userId) {
             $this->libraryModel->updateProgress($userId, $chapter['story_id'], $chapter['chapter_number']);

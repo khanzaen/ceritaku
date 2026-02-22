@@ -29,12 +29,19 @@ class AuthController extends BaseController
                 ->setJSON(['message' => 'Email and password are required']);
         }
 
+
+        // Check if email exists
+        $userByEmail = $this->userModel->where('email', $email)->first();
+        if (!$userByEmail) {
+            return $this->response->setStatusCode(401)
+                ->setJSON(['message' => 'Email not registered', 'field' => 'email']);
+        }
+
         // Authenticate user via Model
         $user = $this->userModel->authenticate($email, $password);
-
         if (!$user) {
             return $this->response->setStatusCode(401)
-                ->setJSON(['message' => 'Invalid email or password']);
+                ->setJSON(['message' => 'Incorrect password', 'field' => 'password']);
         }
 
         $role = $user['role'] ?? 'USER';

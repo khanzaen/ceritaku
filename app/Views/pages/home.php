@@ -112,10 +112,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="material-symbols-outlined text-base">local_library</span>
                         Explore Stories
                     </a>
-                    <button type="button" onclick="openModal('registerModal')" class="bg-white/10 backdrop-blur border-2 border-white text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-slate-900 transition-all inline-flex items-center gap-2 justify-center">
+                    <a href="<?= base_url('/write') ?>" class="bg-white/10 backdrop-blur border-2 border-white text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-slate-900 transition-all inline-flex items-center gap-2 justify-center">
                         <span class="material-symbols-outlined text-base">edit</span>
                         Start Writing
-                    </button>
+                    </a>
                 </div>
 
                 <div class="mt-3 text-center">
