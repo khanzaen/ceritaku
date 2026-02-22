@@ -456,6 +456,9 @@ class StoryController extends BaseController
         $genre = $this->request->getGet('genre');
         $search = $this->request->getGet('q');
 
+        // Get featured stories for hero section
+        $featured_stories = $this->storyModel->getFeaturedStories(3);
+
         // Get top picks this week for main display
         $stories = $this->storyModel->getTopStoriesThisWeek(10);
 
@@ -482,6 +485,7 @@ class StoryController extends BaseController
         $data = [
             'title' => 'Discover Stories',
             'stories' => $stories,
+            'featured_stories' => $featured_stories,
             'current_genre' => $genre,
             'search_query' => $search,
             'trending_genres' => $trending_genres,
@@ -611,5 +615,17 @@ class StoryController extends BaseController
         }
 
         return redirect()->to('/my-stories')->with('error', 'Gagal menghapus cerita');
+    }
+    /**
+     * Halaman semua cerita
+     */
+    public function allStories()
+    {
+        $stories = $this->storyModel->getAllStories();
+        $data = [
+            'title' => 'Semua Cerita',
+            'stories' => $stories
+        ];
+        return view('pages/all-stories', $data);
     }
 }

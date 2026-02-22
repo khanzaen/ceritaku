@@ -66,72 +66,122 @@
         <a href="<?= base_url('/discover?genre=Horror') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Horror</a>
         <a href="<?= base_url('/discover?genre=Comedy') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Comedy</a>
         <a href="<?= base_url('/discover?genre=Adventure') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Adventure</a>
-      </div>
+        <a href="<?= base_url('/discover?genre=Historical') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Historical</a>
+        <a href="<?= base_url('/discover?genre=Adventure') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Teen</a>      </div>
     </div>
     
     <!-- Search Results Section -->
+    <?php 
+    // Pastikan $stories selalu array agar tidak error pada count()
+    if (!isset($stories) || !is_array($stories)) {
+        $stories = [];
+    }
+    ?>
     <?php if (!empty($search_query)): ?>
     <section class="mb-12 pb-8 border-b-2 border-slate-200">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-primary mb-2">Search Results</h2>
         <p class="text-slate-600 text-sm">Found <?= count($stories) ?> result(s) for "<strong><?= esc($search_query) ?></strong>"</p>
       </div>
-      
       <?php if (count($stories) > 0): ?>
-      <div class="bg-white border border-border rounded-2xl shadow-sm p-5 overflow-x-auto">
-        <div class="flex gap-3 min-w-full">
-          <?php foreach ($stories as $story): ?>
-          <a href="<?= base_url('/story/' . $story['id']) ?>" class="block">
-            <div class="w-[180px] flex-none p-3 rounded-xl border border-border bg-white hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
-              <div class="relative w-full aspect-[2/3] rounded overflow-hidden bg-slate-100 book-card-shadow mb-3 group">
-                <?php if (!empty($story['cover_image'])): ?>
-                  <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                <?php else: ?>
-                  <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-purple-400 text-[48px]">auto_stories</span>
-                  </div>
-                <?php endif; ?>
-              </div>
-              <div class="space-y-1">
-                <div class="flex items-center gap-1 text-[10px] text-slate-500">
-                  <span class="px-1.5 py-0.5 bg-slate-100 rounded uppercase tracking-widest font-bold"><?= esc(trim(explode(', ', $story['genres'] ?? 'Fiction')[0])) ?></span>
+        <div class="bg-white border border-border rounded-2xl shadow-sm p-5 overflow-x-auto">
+          <div class="flex gap-3 min-w-full">
+            <?php foreach ($stories as $story): ?>
+            <a href="<?= base_url('/story/' . $story['id']) ?>" class="block">
+              <div class="w-[180px] flex-none p-3 rounded-xl border border-border bg-white hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+                <div class="relative w-full aspect-[2/3] rounded overflow-hidden bg-slate-100 book-card-shadow mb-3 group">
+                  <?php if (!empty($story['cover_image'])): ?>
+                    <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <?php else: ?>
+                    <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
+                      <span class="material-symbols-outlined text-purple-400 text-[48px]">auto_stories</span>
+                    </div>
+                  <?php endif; ?>
                 </div>
-                <h3 class="text-sm font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
-                <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
-                <p class="text-[10px] text-slate-500">
-                  <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                  <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
-                </p>
+                <div class="space-y-1">
+                  <div class="flex items-center gap-1 text-[10px] text-slate-500">
+                    <span class="px-1.5 py-0.5 bg-slate-100 rounded uppercase tracking-widest font-bold"><?= esc(trim(explode(', ', $story['genres'] ?? 'Fiction')[0])) ?></span>
+                  </div>
+                  <h3 class="text-sm font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
+                  <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
+                  <p class="text-[10px] text-slate-500">
+                    <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
+                    <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
+                  </p>
+                </div>
               </div>
-            </div>
-          </a>
-          <?php endforeach; ?>
+            </a>
+            <?php endforeach; ?>
+          </div>
         </div>
-      </div>
       <?php else: ?>
-      <div class="text-center py-12 bg-slate-50 rounded-xl border border-border">
-        <span class="material-symbols-outlined text-5xl text-slate-300 mb-4 inline-block">search</span>
-        <p class="text-slate-600 font-medium">No stories found matching your search</p>
-        <p class="text-slate-500 text-sm">Try different keywords or browse featured stories below</p>
-      </div>
+        <div class="text-center py-12 bg-slate-50 rounded-xl border border-border">
+          <span class="material-symbols-outlined text-5xl text-slate-300 mb-4 inline-block">search</span>
+          <p class="text-slate-600 font-medium">No stories found matching your search</p>
+          <p class="text-slate-500 text-sm">Try different keywords or browse featured stories below</p>
+        </div>
       <?php endif; ?>
     </section>
-    <div class="mb-8">
-      <h2 class="text-2xl font-bold text-primary mb-6">Browse More Stories</h2>
-    </div>
-    <?php endif; ?>
+<?php endif; ?>
+
+<!-- Genre Filter Results Section -->
+<?php if (empty($search_query) && !empty($current_genre)): ?>
+                  <section class="mb-12 pb-8 border-b-2 border-slate-200">
+                    <div class="mb-6">
+                      <h2 class="text-2xl font-bold text-primary mb-2">Genre: <?= esc($current_genre) ?></h2>
+                      <p class="text-slate-600 text-sm">Found <?= count($stories) ?> result(s) for genre "<strong><?= esc($current_genre) ?></strong>"</p>
+                    </div>
+                    <?php if (count($stories) > 0): ?>
+                    <div class="bg-white border border-border rounded-2xl shadow-sm p-5 overflow-x-auto">
+                      <div class="flex gap-3 min-w-full">
+                        <?php foreach ($stories as $story): ?>
+                        <a href="<?= base_url('/story/' . $story['id']) ?>" class="block">
+                          <div class="w-[180px] flex-none p-3 rounded-xl border border-border bg-white hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+                            <div class="relative w-full aspect-[2/3] rounded overflow-hidden bg-slate-100 book-card-shadow mb-3 group">
+                              <?php if (!empty($story['cover_image'])): ?>
+                                <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                              <?php else: ?>
+                                <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
+                                  <span class="material-symbols-outlined text-purple-400 text-[48px]">auto_stories</span>
+                                </div>
+                              <?php endif; ?>
+                            </div>
+                            <div class="space-y-1">
+                              <div class="flex items-center gap-1 text-[10px] text-slate-500">
+                                <span class="px-1.5 py-0.5 bg-slate-100 rounded uppercase tracking-widest font-bold"><?= esc(trim(explode(', ', $story['genres'] ?? 'Fiction')[0])) ?></span>
+                              </div>
+                              <h3 class="text-sm font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
+                              <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
+                              <p class="text-[10px] text-slate-500">
+                                <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
+                                <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <?php endforeach; ?>
+                      </div>
+                    </div>
+                    <?php else: ?>
+                    <div class="text-center py-12 bg-slate-50 rounded-xl border border-border">
+                      <span class="material-symbols-outlined text-5xl text-slate-300 mb-4 inline-block">search</span>
+                      <p class="text-slate-600 font-medium">No stories found in this genre</p>
+                    </div>
+                    <?php endif; ?>
+                  </section>
+                  <?php endif; ?>
     
-    <!-- Only show featured and other sections when NOT searching -->
-    <?php if (empty($search_query)): ?>
+    <!-- Only show featured and other sections when NOT searching or filtering by genre -->
+    <?php if (empty($search_query) && empty($current_genre)): ?>
     
     <!-- Featured Story Hero Section -->
     <section class="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-2xl border border-border mb-10 shadow-lg overflow-hidden">
       <div class="relative">
         <div id="featured-slider" class="transition-all duration-700 ease-in-out">
           <?php 
-          $featured_count = min(3, count($stories));
+          $featured_count = min(3, count($featured_stories ?? []));
           for ($i = 0; $i < $featured_count; $i++): 
-            $story = $stories[$i];
+            $story = $featured_stories[$i];
             $isActive = $i === 0 ? 'active' : '';
           ?>
           <div class="featured-slide <?= $isActive ?>" data-index="<?= $i ?>">
@@ -194,7 +244,7 @@
     <section class="mb-14">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl md:text-3xl font-bold text-primary">Top picks this week</h2>
-        <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">See all →</a>
+        <a href="<?= base_url('/discover/all') ?>" class="text-sm font-semibold text-accent hover:underline">See all →</a>
       </div>
       <div class="bg-white border border-border rounded-2xl shadow-sm p-5 overflow-x-auto">
         <div class="flex gap-3 min-w-full">
@@ -227,7 +277,7 @@
                 <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
                 <p class="text-[10px] text-slate-500">
                   <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                  <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> dibaca</span>
+                  <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
                 </p>
               </div>
             </div>
@@ -285,7 +335,7 @@
               $ratings = array_map(function($s) { return $s['avg_rating'] ?? 0; }, $genre_stories);
               $avg_rating = !empty($ratings) ? (array_sum($ratings) / count($ratings)) : 0;
             }
-            $progress_width = $avg_rating > 0 ? min(100, ($avg_rating / 5) * 100) : 0;
+            $progress_width = min(100, ($avg_rating / 5) * 100);
         ?>
         <div class="p-5 bg-gradient-to-br <?= $styles['gradient'] ?> border border-border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
           <div class="flex items-center justify-between mb-3">
@@ -429,11 +479,6 @@
             <?php if (!empty($author['bio'])): ?>
               <p class="text-xs text-slate-500 line-clamp-2 mb-3"><?= esc(substr($author['bio'], 0, 60)) ?></p>
             <?php endif; ?>
-
-            <!-- Follow Button -->
-            <button class="w-full px-3 py-1.5 bg-accent hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-colors">
-              Follow
-            </button>
           </div>
         </a>
         <?php 

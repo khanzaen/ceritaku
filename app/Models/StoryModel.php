@@ -6,6 +6,23 @@ use CodeIgniter\Model;
 
 class StoryModel extends Model
 {
+    /**
+     * Get all stories with author, rating, and views info
+     */
+    public function getAllStories()
+    {
+        $builder = $this->builder();
+        $builder->select('stories.*, users.name as author_name, users.profile_photo as author_photo, AVG(reviews.rating) as avg_rating, COUNT(DISTINCT reviews.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views');
+        $builder->join('users', 'users.id = stories.author_id', 'left');
+        $builder->join('reviews', 'reviews.story_id = stories.id', 'left');
+        $builder->join('user_library', 'user_library.story_id = stories.id', 'left');
+        // $builder->where('stories.status', 'PUBLISHED');
+        $builder->groupBy('stories.id');
+        $builder->orderBy('stories.created_at', 'DESC');
+        // Debug logging removed: getCompiledSelect() not available in Model context
+        $result = $builder->get()->getResultArray();
+        return $result;
+    }
     protected $table            = 'stories';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
@@ -19,7 +36,8 @@ class StoryModel extends Model
         'cover_image',
         'genres',
         'status',
-        'publication_status'
+        'publication_status',
+        'is_featured',
     ];
 
     // Dates
@@ -198,6 +216,7 @@ class StoryModel extends Model
             ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
+            ->where('stories.is_featured', 1)
             ->groupBy('stories.id')
             ->orderBy('avg_rating', 'DESC')
             ->orderBy('review_count', 'DESC')

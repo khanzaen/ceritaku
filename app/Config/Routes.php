@@ -29,6 +29,7 @@ $routes->post('/story/update/(:num)', 'StoryController::update/$1');
 $routes->post('/story/delete/(:num)', 'StoryController::delete/$1');
 
 $routes->get('/discover', 'StoryController::discover');
+$routes->get('/discover/all', 'StoryController::allStories');
 $routes->get('/story/(:num)', 'StoryController::detail/$1');
 $routes->post('/story/(:num)/rate', 'StoryController::rate/$1');
 $routes->get('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
