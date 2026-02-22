@@ -5,18 +5,21 @@ namespace App\Controllers;
 use App\Models\ChapterModel;
 use App\Models\CommentModel;
 use App\Models\UserLibraryModel;
+use App\Models\StoryModel;
 
 class ChapterController extends BaseController
 {
     protected $chapterModel;
     protected $commentModel;
     protected $libraryModel;
+    protected $storyModel;
 
     public function __construct()
     {
         $this->chapterModel = new ChapterModel();
         $this->commentModel = new CommentModel();
         $this->libraryModel = new UserLibraryModel();
+        $this->storyModel   = new StoryModel();
     }
 
     /**
@@ -32,27 +35,29 @@ class ChapterController extends BaseController
 
         // Require login for all chapters
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'amodalsSilaapageskan_-_- login untuk membaca chapter');
+            return redirect()->to('/login')->with('error', 'Silakan login untuk membaca chapter');
         }
 
-        // Track view
         $userId = session()->get('user_id');
-        $ipAddress = $this->request->getIPAddress();
 
         // Update user progress
         if ($userId) {
             $this->libraryModel->updateProgress($userId, $chapter['story_id'], $chapter['chapter_number']);
         }
 
+        // Ambil data story lengkap (termasuk cover_image) untuk hero banner di view
+        $story = $this->storyModel->getStoryWithDetails($chapter['story_id']);
+
         $data = [
-            'title' => $chapter['title'] . ' - ' . $chapter['story_title'],
-            'chapter' => $chapter,
-            'next_chapter' => $this->chapterModel->getNextChapter($chapter['story_id'], $chapter['chapter_number']),
-            'prev_chapter' => $this->chapterModel->getPreviousChapter($chapter['story_id'], $chapter['chapter_number']),
-            'comments' => $this->commentModel->getCommentsByChapter($id),
+            'title'          => $chapter['title'] . ' - ' . $chapter['story_title'],
+            'chapter'        => $chapter,
+            'story'          => $story,
+            'next_chapter'   => $this->chapterModel->getNextChapter($chapter['story_id'], $chapter['chapter_number']),
+            'prev_chapter'   => $this->chapterModel->getPreviousChapter($chapter['story_id'], $chapter['chapter_number']),
+            'comments'       => $this->commentModel->getCommentsByChapter($id),
             'total_comments' => $this->commentModel->getTotalCommentsByChapter($id),
-            'all_chapters' => $this->chapterModel->getChaptersByStory($chapter['story_id']),
-            'chapter_count' => $this->chapterModel->getChapterCountPerStory($chapter['story_id']),
+            'all_chapters'   => $this->chapterModel->getChaptersByStory($chapter['story_id']),
+            'chapter_count'  => $this->chapterModel->getChapterCountPerStory($chapter['story_id']),
         ];
 
         return view('pages/read-chapter', $data);
@@ -68,12 +73,12 @@ class ChapterController extends BaseController
         }
 
         $comment = $this->request->getPost('comment');
-        $userId = session()->get('user_id');
+        $userId  = session()->get('user_id');
 
         $data = [
             'chapter_id' => $id,
-            'user_id' => $userId,
-            'comment' => $comment,
+            'user_id'    => $userId,
+            'comment'    => $comment,
         ];
 
         if ($this->commentModel->insert($data)) {

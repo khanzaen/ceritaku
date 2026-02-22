@@ -6,18 +6,32 @@ $isLoggedIn  = session()->get('isLoggedIn') === true;
 $totalChaps  = count($all_chapters ?? []);
 $currentNum  = (int)($chapter['chapter_number'] ?? 1);
 $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
+$coverImage  = !empty($story['cover_image']) ? base_url('uploads/' . $story['cover_image']) : null;
 ?>
 
-<main class="max-w-6xl mx-auto px-6 py-8">
+<?php if ($coverImage): ?>
+<!-- ── Hero Banner (cover image behind chapter header) ─────────────────── -->
+<div class="relative w-full h-64 md:h-80 overflow-hidden -mb-20 md:-mb-28">
+    <!-- Cover image as blurred background -->
+    <img src="<?= $coverImage ?>"
+         alt="Story Cover"
+         class="absolute inset-0 w-full h-full object-cover scale-105"
+         style="filter: blur(3px); transform-origin: center;">
+    <!-- Dark gradient overlay so cards on top remain readable -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-background/95"></div>
+</div>
+<?php endif; ?>
+
+<main class="max-w-6xl mx-auto px-6 py-8 <?= $coverImage ? 'relative z-10' : '' ?>">
 
     <div class="grid md:grid-cols-4 gap-8">
 
-           <!-- ═══════════════════════════════
-               SIDEBAR — Chapter List
-           ═══════════════════════════════ -->
+        <!-- ═══════════════════════════════
+             SIDEBAR — Chapter List
+        ═══════════════════════════════ -->
         <aside class="md:col-span-1">
             <div class="sticky top-20 space-y-3">
-                <!-- Back — outside card -->
+                <!-- Back -->
                 <a href="<?= base_url('/story/' . $chapter['story_id']) ?>"
                    class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors">
                     <span>←</span> Back
@@ -25,29 +39,29 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
 
                 <!-- Chapter List Card -->
                 <div class="bg-white border border-border rounded-2xl shadow-sm">
-                <div class="px-4 py-2 border-b border-border">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chapter List</p>
+                    <div class="px-4 py-2 border-b border-border">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chapter List</p>
+                    </div>
+                    <ul class="divide-y divide-border max-h-[60vh] overflow-y-auto" id="chapter-list">
+                        <?php foreach ($all_chapters as $c): ?>
+                            <?php $isCurrent = $c['id'] == $chapter['id']; ?>
+                            <li>
+                                <a href="<?= base_url('/read-chapter/' . $c['id']) ?>"
+                                   class="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors
+                                          <?= $isCurrent ? 'bg-accent text-white font-semibold' : 'text-slate-700 hover:bg-slate-50' ?>">
+                                    <span class="text-xs shrink-0 w-5 text-center <?= $isCurrent ? 'text-white/70' : 'text-slate-400' ?>">
+                                        <?= (int)$c['chapter_number'] ?>
+                                    </span>
+                                    <span class="truncate"><?= esc($c['title']) ?></span>
+                                    <?php if (!empty($c['is_premium'])): ?>
+                                        <span class="ml-auto shrink-0 px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded">Pro</span>
+                                    <?php endif; ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
-                <ul class="divide-y divide-border max-h-[60vh] overflow-y-auto" id="chapter-list">
-                    <?php foreach ($all_chapters as $c): ?>
-                        <?php $isCurrent = $c['id'] == $chapter['id']; ?>
-                        <li>
-                            <a href="<?= base_url('/read-chapter/' . $c['id']) ?>"
-                               class="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors
-                                      <?= $isCurrent ? 'bg-accent text-white font-semibold' : 'text-slate-700 hover:bg-slate-50' ?>">
-                                <span class="text-xs shrink-0 w-5 text-center <?= $isCurrent ? 'text-white/70' : 'text-slate-400' ?>">
-                                    <?= (int)$c['chapter_number'] ?>
-                                </span>
-                                <span class="truncate"><?= esc($c['title']) ?></span>
-                                <?php if (!empty($c['is_premium'])): ?>
-                                    <span class="ml-auto shrink-0 px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded">Pro</span>
-                                <?php endif; ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-                </div><!-- end card -->
-            </div><!-- end sticky -->
+            </div>
         </aside>
 
         <!-- ═══════════════════════════════
@@ -55,8 +69,8 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
         ═══════════════════════════════ -->
         <div class="md:col-span-3 space-y-6">
 
-            <!-- Breadcrumb — inline with content -->
-            <nav class="text-xs text-slate-500">
+            <!-- Breadcrumb -->
+            <nav class="text-xs text-slate-500 <?= $coverImage ? 'pt-2' : '' ?>">
                 <a href="<?= base_url() ?>" class="hover:text-slate-900">Home</a>
                 <span class="mx-2">/</span>
                 <a href="<?= base_url('/discover') ?>" class="hover:text-slate-900">Discover</a>
@@ -65,6 +79,8 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                 <span class="mx-2">/</span>
                 <span class="text-slate-700 font-medium">Chapter <?= $currentNum ?></span>
             </nav>
+
+            <!-- Chapter Header Card -->
             <div class="bg-white border border-border rounded-2xl shadow-sm p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
@@ -126,12 +142,12 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                 <div>
                     <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Font Style</label>
                     <div class="grid grid-cols-3 gap-1.5">
-                        <button data-font="font-sans"    class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family: 'Inter', sans-serif">Sans</button>
-                        <button data-font="font-serif"   class="font-btn text-xs py-2 rounded-lg border border-accent bg-accent/10 text-accent transition-all" style="font-family: 'Lora', serif">Serif</button>
-                        <button data-font="font-mono"    class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family: monospace">Mono</button>
-                        <button data-font="font-georgia" class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family: Georgia, serif">Georgia</button>
-                        <button data-font="font-garamond" class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family: Garamond, serif">Garamond</button>
-                        <button data-font="font-palatino" class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family: Palatino, serif">Palatino</button>
+                        <button data-font="font-sans"     class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family:'Inter',sans-serif">Sans</button>
+                        <button data-font="font-serif"    class="font-btn text-xs py-2 rounded-lg border border-accent bg-accent/10 text-accent transition-all" style="font-family:'Lora',serif">Serif</button>
+                        <button data-font="font-mono"     class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family:monospace">Mono</button>
+                        <button data-font="font-georgia"  class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family:Georgia,serif">Georgia</button>
+                        <button data-font="font-garamond" class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family:Garamond,serif">Garamond</button>
+                        <button data-font="font-palatino" class="font-btn text-xs py-2 rounded-lg border border-border text-slate-600 hover:border-accent transition-all" style="font-family:Palatino,serif">Palatino</button>
                     </div>
                 </div>
 
@@ -291,48 +307,40 @@ function applyFont(fontKey) {
     content.style.fontFamily = FONT_MAP[fontKey] || FONT_MAP['font-serif'];
     document.querySelectorAll('.font-btn').forEach(btn => {
         const active = btn.dataset.font === fontKey;
-        btn.classList.toggle('border-accent', active);
-        btn.classList.toggle('bg-accent/10',  active);
-        btn.classList.toggle('text-accent',   active);
-        btn.classList.toggle('border-border', !active);
-        btn.classList.toggle('text-slate-600',!active);
+        btn.classList.toggle('border-accent',  active);
+        btn.classList.toggle('bg-accent/10',   active);
+        btn.classList.toggle('text-accent',    active);
+        btn.classList.toggle('border-border',  !active);
+        btn.classList.toggle('text-slate-600', !active);
     });
 }
 
 function applyTheme(theme) {
     const dark = theme === 'dark';
-
-    // Body & page background
-    body.classList.toggle('bg-slate-950', dark);
-    body.classList.toggle('bg-background', !dark);
-
-    // Article content
+    body.classList.toggle('bg-slate-950',   dark);
+    body.classList.toggle('bg-background',  !dark);
     content.classList.toggle('bg-slate-900',   dark);
     content.classList.toggle('text-slate-200', dark);
     content.classList.toggle('bg-white',       !dark);
     content.classList.toggle('text-slate-800', !dark);
-
-    // Sidebar card
     document.querySelectorAll('.dark-card').forEach(el => {
-        el.classList.toggle('bg-slate-900', dark);
-        el.classList.toggle('border-slate-700', dark);
-        el.classList.toggle('bg-white', !dark);
-        el.classList.toggle('border-border', !dark);
+        el.classList.toggle('bg-slate-900',    dark);
+        el.classList.toggle('border-slate-700',dark);
+        el.classList.toggle('bg-white',        !dark);
+        el.classList.toggle('border-border',   !dark);
     });
-
-    // Theme buttons
     const lightBtn = document.getElementById('theme-light');
     const darkBtn  = document.getElementById('theme-dark');
-    lightBtn.classList.toggle('border-accent', !dark);
-    lightBtn.classList.toggle('bg-accent/10',  !dark);
-    lightBtn.classList.toggle('text-accent',   !dark);
-    lightBtn.classList.toggle('border-border', dark);
-    lightBtn.classList.toggle('text-slate-600',dark);
-    darkBtn.classList.toggle('border-accent',  dark);
-    darkBtn.classList.toggle('bg-accent/10',   dark);
-    darkBtn.classList.toggle('text-accent',    dark);
-    darkBtn.classList.toggle('border-border',  !dark);
-    darkBtn.classList.toggle('text-slate-600', !dark);
+    lightBtn.classList.toggle('border-accent',  !dark);
+    lightBtn.classList.toggle('bg-accent/10',   !dark);
+    lightBtn.classList.toggle('text-accent',    !dark);
+    lightBtn.classList.toggle('border-border',  dark);
+    lightBtn.classList.toggle('text-slate-600', dark);
+    darkBtn.classList.toggle('border-accent',   dark);
+    darkBtn.classList.toggle('bg-accent/10',    dark);
+    darkBtn.classList.toggle('text-accent',     dark);
+    darkBtn.classList.toggle('border-border',   !dark);
+    darkBtn.classList.toggle('text-slate-600',  !dark);
 }
 
 function applySettings(s) {
@@ -355,7 +363,7 @@ function save() {
 applySettings(getSaved());
 
 slider.addEventListener('input', (e) => {
-    sizeVal.textContent = e.target.value + 'px';
+    sizeVal.textContent    = e.target.value + 'px';
     content.style.fontSize = e.target.value + 'px';
     save();
 });
