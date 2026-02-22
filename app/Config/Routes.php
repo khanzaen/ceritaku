@@ -56,14 +56,26 @@ $routes->post('/user/(:num)/follow', 'UserController::follow/$1');
 
 // Admin Routes
 $routes->group('admin', ['filter' => 'auth'], function($routes) {
+    // Dashboard
     $routes->get('dashboard', 'Admin\Dashboard::index');
-    
+
     // Story Management
     $routes->get('stories', 'Admin\StoryManagement::index');
     $routes->get('stories/approve/(:num)', 'Admin\StoryManagement::approve/$1');
     $routes->get('stories/archive/(:num)', 'Admin\StoryManagement::archive/$1');
     $routes->delete('stories/delete/(:num)', 'Admin\StoryManagement::delete/$1');
-    
+    $routes->post('stories/delete/(:num)', 'Admin\StoryManagement::delete/$1');
+
+    // Chapter Management
+    $routes->get('chapters', 'Admin\ChapterManagement::index');
+    $routes->delete('chapters/delete/(:num)', 'Admin\ChapterManagement::delete/$1');
+    $routes->post('chapters/delete/(:num)', 'Admin\ChapterManagement::delete/$1');
+
+    // Review Management
+    $routes->get('reviews', 'Admin\ReviewManagement::index');
+    $routes->delete('reviews/delete/(:num)', 'Admin\ReviewManagement::delete/$1');
+    $routes->post('reviews/delete/(:num)', 'Admin\ReviewManagement::delete/$1');
+
     // User Management
     $routes->get('users', 'Admin\UserManagement::index');
     $routes->get('users/verify/(:num)', 'Admin\UserManagement::verify/$1');

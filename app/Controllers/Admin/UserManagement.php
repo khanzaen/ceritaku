@@ -15,12 +15,12 @@ class UserManagement extends BaseController
     }
 
     /**
-     * Check admin access
+     * Check admin access — uses correct session key 'user_role'
      */
     private function checkAdmin()
     {
-        if (!session()->get('isLoggedIn') || session()->get('role') !== 'ADMIN') {
-            return redirect()->to('/login')->with('error', 'Akses ditolak');
+        if (!session()->get('isLoggedIn') || strtoupper(session()->get('user_role')) !== 'ADMIN') {
+            return redirect()->to('/')->with('error', 'Akses ditolak');
         }
         return null;
     }
@@ -34,11 +34,11 @@ class UserManagement extends BaseController
         if ($redirect) return $redirect;
 
         $data = [
-            'title' => 'Manage Users',
+            'title' => 'User Management',
             'users' => $this->userModel->orderBy('created_at', 'DESC')->findAll(),
         ];
 
-        return view('admin/users/index', $data);
+        return view('admin/user-management', $data);
     }
 
     /**
@@ -49,10 +49,9 @@ class UserManagement extends BaseController
         $redirect = $this->checkAdmin();
         if ($redirect) return $redirect;
 
-        if ($this->userModel->verifyUser($id)) {
+        if ($this->userModel->update($id, ['is_verified' => 1])) {
             return redirect()->back()->with('success', 'User berhasil diverifikasi');
         }
-
         return redirect()->back()->with('error', 'Gagal memverifikasi user');
     }
 
@@ -69,7 +68,6 @@ class UserManagement extends BaseController
         if ($this->userModel->update($id, ['role' => $role])) {
             return redirect()->back()->with('success', 'Role user berhasil diubah');
         }
-
         return redirect()->back()->with('error', 'Gagal mengubah role user');
     }
 
@@ -81,7 +79,6 @@ class UserManagement extends BaseController
         $redirect = $this->checkAdmin();
         if ($redirect) return $redirect;
 
-        // Prevent deleting own account
         if ($id == session()->get('user_id')) {
             return redirect()->back()->with('error', 'Tidak dapat menghapus akun sendiri');
         }
@@ -89,7 +86,6 @@ class UserManagement extends BaseController
         if ($this->userModel->delete($id)) {
             return redirect()->back()->with('success', 'User berhasil dihapus');
         }
-
         return redirect()->back()->with('error', 'Gagal menghapus user');
     }
 }

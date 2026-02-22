@@ -43,7 +43,6 @@ function showToast(message, type = 'info', duration = 3000) {
     const toastId = 'toast-' + Date.now();
     toast.id = toastId;
     
-    // Toast colors based on type
     const colors = {
         success: 'bg-green-500',
         error: 'bg-red-500',
@@ -68,12 +67,10 @@ function showToast(message, type = 'info', duration = 3000) {
     
     container.appendChild(toast);
     
-    // Trigger animation
     setTimeout(() => {
         toast.classList.remove('opacity-0', 'translate-x-full');
     }, 10);
     
-    // Auto remove after duration
     if (duration > 0) {
         setTimeout(() => {
             closeToast(toastId);
@@ -113,8 +110,6 @@ function closeLogoutConfirm() {
 
 function confirmLogout() {
     closeLogoutConfirm();
-    
-    // Show loading toast
     showToast('Logging out...', 'info', 0);
     
     fetch('/auth/logout', {
@@ -125,14 +120,9 @@ function confirmLogout() {
     })
     .then(response => response.json())
     .then(data => {
-        // Close all toasts
         const container = document.getElementById('toastContainer');
         if (container) container.innerHTML = '';
-        
-        // Show success toast
         showToast('Logout successful! Redirecting...', 'success', 1500);
-        
-        // Redirect after short delay
         setTimeout(() => {
             window.location.href = '/';
         }, 1500);
@@ -156,9 +146,14 @@ if (loginForm) {
         const password = document.getElementById('login_password').value;
         const errorDiv = document.getElementById('loginError');
         const errorText = document.getElementById('loginErrorText');
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
         
-        // Hide error by default
+        // Hide error
         errorDiv.classList.add('hidden');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Logging in...';
         
         fetch('/auth/login', {
             method: 'POST',
@@ -166,22 +161,30 @@ if (loginForm) {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify({
-                email: email,
-                password: password,
-            })
+            body: JSON.stringify({ email, password })
         })
         .then(response => response.json())
         .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Login';
+            
             if (data.message && data.message.includes('successful')) {
                 closeModal('loginModal');
-                window.location.reload();
+                showToast('Login successful! Redirecting...', 'success', 2000);
+                
+                // Role-based redirect
+                const redirectUrl = data.redirect_url || '/';
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 800);
             } else {
                 errorText.textContent = data.message || 'Login failed';
                 errorDiv.classList.remove('hidden');
             }
         })
         .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Login';
             errorText.textContent = 'An error occurred. Please try again.';
             errorDiv.classList.remove('hidden');
             console.error('Error:', error);
@@ -202,7 +205,6 @@ if (registerForm) {
         const errorDiv = document.getElementById('registerError');
         const errorText = document.getElementById('registerErrorText');
         
-        // Hide error by default
         errorDiv.classList.add('hidden');
         
         if (password !== passwordConfirm) {
@@ -217,18 +219,17 @@ if (registerForm) {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify({
-                name: name,
-                email: email,
-                password: password,
-                password_confirm: passwordConfirm,
-            })
+            body: JSON.stringify({ name, email, password, password_confirm: passwordConfirm })
         })
         .then(response => response.json())
         .then(data => {
             if (data.message && data.message.includes('successful')) {
                 closeModal('registerModal');
-                window.location.reload();
+                showToast('Registration successful! Welcome!', 'success', 2000);
+                const redirectUrl = data.redirect_url || '/';
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 800);
             } else {
                 errorText.textContent = data.message || 'Registration failed';
                 errorDiv.classList.remove('hidden');

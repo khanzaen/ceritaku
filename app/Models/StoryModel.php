@@ -52,9 +52,9 @@ class StoryModel extends Model
      */
     public function getPublishedStories(int $limit = null)
     {
-        $builder = $this->select('stories.*, users.name as author_name, users.profile_photo as author_photo, AVG(ratings.rating) as avg_rating, COUNT(DISTINCT ratings.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
+        $builder = $this->select('stories.*, users.name as author_name, users.profile_photo as author_photo, AVG(reviews.rating) as avg_rating, COUNT(DISTINCT reviews.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
             ->groupBy('stories.id')
@@ -76,12 +76,11 @@ class StoryModel extends Model
                 users.name as author_name, 
                 users.profile_photo as author_photo,
                 users.bio as author_bio,
-                AVG(ratings.rating) as avg_rating,
-                COUNT(DISTINCT ratings.id) as total_ratings,
+                AVG(reviews.rating) as avg_rating,
+                COUNT(DISTINCT reviews.id) as total_ratings,
                 COUNT(DISTINCT reviews.id) as total_reviews,
                 COUNT(DISTINCT user_library.id) as total_views')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
             ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.id', $storyId)
@@ -116,9 +115,9 @@ class StoryModel extends Model
      */
     public function searchStories(string $keyword, int $limit = 10)
     {
-        return $this->select('stories.*, users.name as author_name, AVG(ratings.rating) as avg_rating, COUNT(DISTINCT ratings.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
+        return $this->select('stories.*, users.name as author_name, AVG(reviews.rating) as avg_rating, COUNT(DISTINCT reviews.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
             ->groupStart()
@@ -135,9 +134,9 @@ class StoryModel extends Model
      */
     public function getStoriesByGenre(string $genreName, int $limit = null)
     {
-        $builder = $this->select('stories.*, users.name as author_name, AVG(ratings.rating) as avg_rating, COUNT(DISTINCT ratings.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
+        $builder = $this->select('stories.*, users.name as author_name, AVG(reviews.rating) as avg_rating, COUNT(DISTINCT reviews.id) as total_ratings, COUNT(DISTINCT user_library.id) as total_views')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->like('stories.genres', $genreName)
             ->where('stories.status', 'PUBLISHED')
@@ -156,9 +155,9 @@ class StoryModel extends Model
      */
     public function getStoriesByPublicationStatus(string $publicationStatus, int $limit = null)
     {
-        $builder = $this->select('stories.*, users.name as author_name, AVG(ratings.rating) as avg_rating')
+        $builder = $this->select('stories.*, users.name as author_name, AVG(reviews.rating) as avg_rating')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
             ->where('stories.publication_status', $publicationStatus)
             ->groupBy('stories.id')
@@ -191,12 +190,11 @@ class StoryModel extends Model
     {
         return $this->select('stories.*, 
                 users.name as author_name,
-                AVG(ratings.rating) as avg_rating,
-                COUNT(DISTINCT ratings.id) as total_ratings,
+                AVG(reviews.rating) as avg_rating,
+                COUNT(DISTINCT reviews.id) as total_ratings,
                 COUNT(DISTINCT reviews.id) as review_count,
                 COUNT(DISTINCT user_library.id) as total_views')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
             ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
@@ -214,11 +212,11 @@ class StoryModel extends Model
     {
         return $this->select('stories.*, 
                 users.name as author_name,
-                AVG(ratings.rating) as avg_rating,
-                COUNT(DISTINCT ratings.id) as total_ratings,
+                AVG(reviews.rating) as avg_rating,
+                COUNT(DISTINCT reviews.id) as total_ratings,
                 COUNT(DISTINCT user_library.id) as total_views')
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
             ->groupBy('stories.id')
@@ -234,15 +232,15 @@ class StoryModel extends Model
     {
         $oneWeekAgo = date('Y-m-d H:i:s', strtotime('-7 days'));
         
-        return $this->select('stories.*, 
-                users.name as author_name,
-                users.profile_photo as author_photo,
-                AVG(ratings.rating) as avg_rating,
-                COUNT(DISTINCT ratings.id) as total_ratings,
-                COUNT(DISTINCT user_library.id) as total_views,
-                SUM(CASE WHEN user_library.added_at >= \'' . $oneWeekAgo . '\' THEN 1 ELSE 0 END) as weekly_views')
+        return $this->select("stories.*, 
+            users.name as author_name,
+            users.profile_photo as author_photo,
+            AVG(reviews.rating) as avg_rating,
+            COUNT(DISTINCT reviews.id) as total_ratings,
+            COUNT(DISTINCT user_library.id) as total_views,
+            SUM(CASE WHEN user_library.added_at >= '{$oneWeekAgo}' THEN 1 ELSE 0 END) as weekly_views")
             ->join('users', 'users.id = stories.author_id')
-            ->join('ratings', 'ratings.story_id = stories.id', 'left')
+            ->join('reviews', 'reviews.story_id = stories.id', 'left')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
             ->where('stories.status', 'PUBLISHED')
             ->groupBy('stories.id')

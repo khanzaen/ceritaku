@@ -37,108 +37,126 @@ class AuthController extends BaseController
                 ->setJSON(['message' => 'Invalid email or password']);
         }
 
+        $role = $user['role'] ?? 'USER';
+
         // Set session
         session()->set([
-            'user_id' => $user['id'],
-            'user_name' => $user['name'],
+            'user_id'    => $user['id'],
+            'user_name'  => $user['name'],
             'user_email' => $user['email'],
-            'user_role' => $user['role'] ?? 'USER',
+            'user_role'  => $role,
             'isLoggedIn' => true,
         ]);
 
+        // Determine redirect URL based on role
+        $redirectUrl = '/';
+        if (strtoupper($role) === 'ADMIN') {
+            $redirectUrl = base_url('admin/dashboard');
+        }
+
         // Return JSON response for AJAX requests
         return $this->response->setJSON([
-            'message' => 'Login successful',
+            'message'      => 'Login successful',
+            'redirect_url' => $redirectUrl,
             'user' => [
-                'id' => $user['id'],
+                'id'    => $user['id'],
                 'email' => $user['email'],
-                'name' => $user['name'],
+                'name'  => $user['name'],
+                'role'  => $role,
             ],
         ]);
     }
+
     /**
- * Step 1: Redirect ke halaman login Google
- */
-public function googleRedirect()
-{
-    $provider = $this->getGoogleProvider();
+     * Step 1: Redirect ke halaman login Google
+     */
+    public function googleRedirect()
+    {
+        $provider = $this->getGoogleProvider();
 
-    $state = bin2hex(random_bytes(16));
-    session()->set('oauth_state', $state);
+        $state = bin2hex(random_bytes(16));
+        session()->set('oauth_state', $state);
 
-    return redirect()->to($provider->getAuthorizationUrl(['state' => $state]));
-}
+        return redirect()->to($provider->getAuthorizationUrl(['state' => $state]));
+    }
 
-/**
- * Step 2: Google callback setelah user login
- */
-public function googleCallback()
-{
-    $code  = $this->request->getGet('code');
-    $state = $this->request->getGet('state');
+    /**
+     * Step 2: Google callback setelah user login
+     */
+    public function googleCallback()
+    {
+        $code  = $this->request->getGet('code');
+        $state = $this->request->getGet('state');
 
-    // Validasi CSRF OAuth
-    if (!$state || $state !== session()->get('oauth_state')) {
+        // Validasi CSRF OAuth
+        if (!$state || $state !== session()->get('oauth_state')) {
+            session()->remove('oauth_state');
+            return redirect()->to('/')->with('error', 'Invalid OAuth state. Please try again.');
+        }
         session()->remove('oauth_state');
-        return redirect()->to('/')->with('error', 'Invalid OAuth state. Please try again.');
-    }
-    session()->remove('oauth_state');
 
-    if (!$code) {
-        return redirect()->to('/')->with('error', 'Google login was cancelled.');
-    }
-
-    try {
-        $provider   = $this->getGoogleProvider();
-        $token      = $provider->getAccessToken('authorization_code', ['code' => $code]);
-        $googleUser = $provider->getResourceOwner($token);
-
-        $user = $this->userModel->findOrCreateFromProvider([
-            'provider'      => 'google',
-            'provider_id'   => $googleUser->getId(),
-            'name'          => $googleUser->getName(),
-            'email'         => $googleUser->getEmail(),
-            'profile_photo' => $googleUser->getAvatar(),
-        ]);
-
-        if (!$user) {
-            return redirect()->to('/')->with('error', 'Failed to process Google login.');
+        if (!$code) {
+            return redirect()->to('/')->with('error', 'Google login was cancelled.');
         }
 
-        $this->setUserSession($user);
-        return redirect()->to('/');
+        try {
+            $provider   = $this->getGoogleProvider();
+            $token      = $provider->getAccessToken('authorization_code', ['code' => $code]);
+            $googleUser = $provider->getResourceOwner($token);
 
-    } catch (\Exception $e) {
-        log_message('error', 'Google OAuth error: ' . $e->getMessage());
-        return redirect()->to('/')->with('error', 'Google login failed. Please try again.');
+            $user = $this->userModel->findOrCreateFromProvider([
+                'provider'      => 'google',
+                'provider_id'   => $googleUser->getId(),
+                'name'          => $googleUser->getName(),
+                'email'         => $googleUser->getEmail(),
+                'profile_photo' => $googleUser->getAvatar(),
+            ]);
+
+            if (!$user) {
+                return redirect()->to('/')->with('error', 'Failed to process Google login.');
+            }
+
+            $this->setUserSession($user);
+
+            // Redirect by role
+            $role = $user['role'] ?? 'USER';
+            if (strtoupper($role) === 'ADMIN') {
+                return redirect()->to(base_url('admin/dashboard'));
+            }
+
+            return redirect()->to('/');
+
+        } catch (\Exception $e) {
+            log_message('error', 'Google OAuth error: ' . $e->getMessage());
+            return redirect()->to('/')->with('error', 'Google login failed. Please try again.');
+        }
     }
-}
 
-/**
- * Helper: set session setelah login berhasil
- */
-private function setUserSession(array $user): void
-{
-    session()->set([
-        'user_id'    => $user['id'],
-        'user_name'  => $user['name'],
-        'user_email' => $user['email'],
-        'user_role'  => $user['role'] ?? 'USER',
-        'isLoggedIn' => true,
-    ]);
-}
+    /**
+     * Helper: set session setelah login berhasil
+     */
+    private function setUserSession(array $user): void
+    {
+        session()->set([
+            'user_id'    => $user['id'],
+            'user_name'  => $user['name'],
+            'user_email' => $user['email'],
+            'user_role'  => $user['role'] ?? 'USER',
+            'isLoggedIn' => true,
+        ]);
+    }
 
-/**
- * Helper: buat instance Google provider dari .env
- */
-private function getGoogleProvider(): Google
-{
-    return new Google([
-        'clientId'     => env('GOOGLE_CLIENT_ID'),
-        'clientSecret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirectUri'  => env('GOOGLE_REDIRECT_URI'),
-    ]);
-}
+    /**
+     * Helper: buat instance Google provider dari .env
+     */
+    private function getGoogleProvider(): Google
+    {
+        return new Google([
+            'clientId'     => env('GOOGLE_CLIENT_ID'),
+            'clientSecret' => env('GOOGLE_CLIENT_SECRET'),
+            'redirectUri'  => env('GOOGLE_REDIRECT_URI'),
+        ]);
+    }
 
     /**
      * Register user - accepts both form submission and JSON request
@@ -169,36 +187,37 @@ private function getGoogleProvider(): Google
 
         // Create new user via Model
         $newUser = $this->userModel->createUser([
-            'name' => $name,
-            'email' => $email,
+            'name'     => $name,
+            'email'    => $email,
             'password' => $password,
-            'role' => 'USER',
+            'role'     => 'USER',
         ]);
 
         if (!$newUser) {
             return $this->response->setStatusCode(500)
                 ->setJSON([
                     'message' => 'Registration failed',
-                    'errors' => $this->userModel->errors(),
+                    'errors'  => $this->userModel->errors(),
                 ]);
         }
 
         // Auto-login
         session()->set([
-            'user_id' => $newUser['id'],
-            'user_name' => $newUser['name'],
+            'user_id'    => $newUser['id'],
+            'user_name'  => $newUser['name'],
             'user_email' => $newUser['email'],
-            'user_role' => $newUser['role'] ?? 'USER',
+            'user_role'  => $newUser['role'] ?? 'USER',
             'isLoggedIn' => true,
         ]);
 
         // Return JSON response for AJAX requests
         return $this->response->setJSON([
-            'message' => 'Registration and login successful',
+            'message'      => 'Registration and login successful',
+            'redirect_url' => '/',
             'user' => [
-                'id' => $newUser['id'],
+                'id'    => $newUser['id'],
                 'email' => $newUser['email'],
-                'name' => $newUser['name'],
+                'name'  => $newUser['name'],
             ],
         ]);
     }

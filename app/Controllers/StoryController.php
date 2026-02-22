@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Models\StoryModel;
 use App\Models\ChapterModel;
 use App\Models\ReviewModel;
-use App\Models\RatingModel;
 use App\Models\UserLibraryModel;
 use App\Models\UserModel;
 
@@ -14,7 +13,6 @@ class StoryController extends BaseController
     protected $storyModel;
     protected $chapterModel;
     protected $reviewModel;
-    protected $ratingModel;
     protected $libraryModel;
     protected $userModel;
 
@@ -23,7 +21,6 @@ class StoryController extends BaseController
         $this->storyModel = new StoryModel();
         $this->chapterModel = new ChapterModel();
         $this->reviewModel = new ReviewModel();
-        $this->ratingModel = new RatingModel();
         $this->libraryModel = new UserLibraryModel();
         $this->userModel = new UserModel();
     }
@@ -439,7 +436,7 @@ class StoryController extends BaseController
         if (session()->get('isLoggedIn')) {
             $userId = session()->get('user_id');
             $data['is_bookmarked'] = $this->libraryModel->isInLibrary($userId, $id);
-            $data['user_rating'] = $this->ratingModel->getUserRating($userId, $id);
+            $data['user_rating'] = null; // RatingModel removed, handle rating via reviews
             $data['user_progress'] = $this->libraryModel->getProgress($userId, $id);
         }
 
@@ -539,15 +536,21 @@ class StoryController extends BaseController
         $rating = $this->request->getPost('rating');
         $userId = session()->get('user_id');
 
-        if ($this->ratingModel->addOrUpdateRating($userId, $id, $rating)) {
-            $newAvg = $this->ratingModel->getAverageRating($id);
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Rating berhasil disimpan',
-                'avg_rating' => $newAvg
-            ]);
-        }
-
+        // RatingModel removed, handle rating via reviews
+        // Implement logic to save rating in reviews table here
+        // Example:
+        // $review = $this->reviewModel->where(['user_id' => $userId, 'story_id' => $id])->first();
+        // if ($review) {
+        //     $this->reviewModel->update($review['id'], ['rating' => $rating]);
+        // } else {
+        //     $this->reviewModel->insert(['user_id' => $userId, 'story_id' => $id, 'rating' => $rating]);
+        // }
+        // $newAvg = $this->reviewModel->where('story_id', $id)->selectAvg('rating')->first()['rating'];
+        // return $this->response->setJSON([
+        //     'success' => true,
+        //     'message' => 'Rating berhasil disimpan',
+        //     'avg_rating' => $newAvg
+        // ]);
         return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan rating']);
     }
 

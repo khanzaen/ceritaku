@@ -4,23 +4,26 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\StoryModel;
+use App\Models\ChapterModel;
 
 class StoryManagement extends BaseController
 {
     protected $storyModel;
+    protected $chapterModel;
 
     public function __construct()
     {
-        $this->storyModel = new StoryModel();
+        $this->storyModel   = new StoryModel();
+        $this->chapterModel = new ChapterModel();
     }
 
     /**
-     * Check admin access
+     * Check admin access — uses correct session key 'user_role'
      */
     private function checkAdmin()
     {
-        if (!session()->get('isLoggedIn') || session()->get('role') !== 'ADMIN') {
-            return redirect()->to('/login')->with('error', 'Akses ditolak');
+        if (!session()->get('isLoggedIn') || strtoupper(session()->get('user_role')) !== 'ADMIN') {
+            return redirect()->to('/')->with('error', 'Akses ditolak');
         }
         return null;
     }
@@ -34,14 +37,15 @@ class StoryManagement extends BaseController
         if ($redirect) return $redirect;
 
         $data = [
-            'title' => 'Manage Stories',
-            'stories' => $this->storyModel->select('stories.*, users.name as author_name')
+            'title'   => 'Story Management',
+            'stories' => $this->storyModel
+                ->select('stories.*, users.name as author_name')
                 ->join('users', 'users.id = stories.author_id')
                 ->orderBy('stories.created_at', 'DESC')
                 ->findAll(),
         ];
 
-        return view('admin/stories/index', $data);
+        return view('admin/story-management', $data);
     }
 
     /**
@@ -55,12 +59,11 @@ class StoryManagement extends BaseController
         if ($this->storyModel->update($id, ['status' => 'PUBLISHED'])) {
             return redirect()->back()->with('success', 'Story berhasil dipublikasikan');
         }
-
         return redirect()->back()->with('error', 'Gagal mempublikasikan story');
     }
 
     /**
-     * Reject/Archive story
+     * Archive story
      */
     public function archive($id)
     {
@@ -70,7 +73,6 @@ class StoryManagement extends BaseController
         if ($this->storyModel->update($id, ['status' => 'ARCHIVED'])) {
             return redirect()->back()->with('success', 'Story berhasil diarsipkan');
         }
-
         return redirect()->back()->with('error', 'Gagal mengarsipkan story');
     }
 
@@ -85,7 +87,6 @@ class StoryManagement extends BaseController
         if ($this->storyModel->delete($id)) {
             return redirect()->back()->with('success', 'Story berhasil dihapus');
         }
-
         return redirect()->back()->with('error', 'Gagal menghapus story');
     }
 }

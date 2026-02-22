@@ -103,9 +103,9 @@ class UserModel extends Model
         
         return $db->table('users')
             ->select('users.id, users.name, users.profile_photo, users.bio, 
-                    COUNT(DISTINCT stories.id) as total_stories,
-                    COALESCE(SUM(user_library.id), 0) as total_readers,
-                    COUNT(DISTINCT reviews.id) as total_reviews')
+                COUNT(DISTINCT stories.id) as total_stories,
+                COUNT(DISTINCT user_library.id) as total_readers,
+                COUNT(DISTINCT reviews.id) as total_reviews')
             ->join('stories', 'stories.author_id = users.id', 'left')
             ->where('stories.status', 'PUBLISHED')
             ->join('user_library', 'user_library.story_id = stories.id', 'left')
