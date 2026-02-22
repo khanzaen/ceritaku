@@ -107,26 +107,29 @@
       </div>
     </div>
 
-    <!-- First Chapter -->
+    <!-- Chapters Section -->
     <div class="bg-gradient-to-br from-purple-50 to-white border border-border rounded-2xl p-6 shadow-sm">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-primary">First Chapter (Optional)</h3>
-        <span class="text-xs text-slate-500">You can add more chapters after publishing</span>
+        <h3 class="text-sm font-bold text-primary">Chapters (Optional)</h3>
+        <span class="text-xs text-slate-500">You can add multiple chapters before publishing</span>
       </div>
-      <div class="space-y-4">
-        <div>
-          <label for="chapter-title" class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
-          <input type="text" id="chapter-title" name="chapter-title" placeholder="e.g., Chapter 1: The Beginning" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
-        </div>
-        <div>
-          <label for="chapter-content" class="block text-xs font-semibold text-slate-600 mb-2">Chapter Content</label>
-          <textarea id="chapter-content" name="chapter-content" rows="10" placeholder="Start writing your first chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
+      <div id="chapters-list" class="space-y-4">
+        <div class="chapter-block">
+          <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
+          <input type="text" name="chapter-title[]" placeholder="e.g., Chapter 1: The Beginning" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
+          <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
+          <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
           <div class="flex items-center justify-between mt-2">
             <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
-            <span class="text-xs text-slate-500" id="word-count">0 words</span>
+            <span class="text-xs text-slate-500 word-count">0 words</span>
           </div>
+          <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all" style="display:none;">Remove Chapter</button>
         </div>
       </div>
+      <button type="button" id="add-chapter-btn" class="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-all inline-flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">add</span>
+        Add Chapter
+      </button>
     </div>
 
     <!-- Action Buttons -->
@@ -175,24 +178,58 @@
     }
   });
 
-  // Word count for chapter content
-  const chapterContent = document.getElementById('chapter-content');
-  const wordCount = document.getElementById('word-count');
-  
-  if (chapterContent && wordCount) {
-    chapterContent.addEventListener('input', () => {
-      const text = chapterContent.value.trim();
-      const words = text ? text.split(/\s+/).length : 0;
-      wordCount.textContent = words + ' words';
-    });
-    
-    // Hitung kata awal jika ada old value
-    if (chapterContent.value) {
-      const text = chapterContent.value.trim();
-      const words = text ? text.split(/\s+/).length : 0;
-      wordCount.textContent = words + ' words';
-    }
+  // Dynamic chapter add/remove
+  const chaptersList = document.getElementById('chapters-list');
+  const addChapterBtn = document.getElementById('add-chapter-btn');
+
+  function updateWordCount(textarea, countSpan) {
+    const text = textarea.value.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    countSpan.textContent = words + ' words';
   }
+
+  function addChapterBlock() {
+    const block = document.createElement('div');
+    block.className = 'chapter-block';
+    block.innerHTML = `
+      <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
+      <input type="text" name="chapter-title[]" placeholder="e.g., Chapter 2: The Adventure Continues" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
+      <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
+      <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus-border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
+      <div class="flex items-center justify-between mt-2">
+        <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
+        <span class="text-xs text-slate-500 word-count">0 words</span>
+      </div>
+      <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all">Remove Chapter</button>
+    `;
+    chaptersList.appendChild(block);
+
+    // Word count handler
+    const textarea = block.querySelector('textarea');
+    const countSpan = block.querySelector('.word-count');
+    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
+
+    // Remove button handler
+    const removeBtn = block.querySelector('.remove-chapter-btn');
+    removeBtn.style.display = 'inline-block';
+    removeBtn.addEventListener('click', () => {
+      block.remove();
+    });
+  }
+
+  // Initial chapter block already present
+  chaptersList.querySelectorAll('.chapter-block').forEach(block => {
+    const textarea = block.querySelector('textarea');
+    const countSpan = block.querySelector('.word-count');
+    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
+    // Remove button handler
+    const removeBtn = block.querySelector('.remove-chapter-btn');
+    removeBtn.addEventListener('click', () => {
+      block.remove();
+    });
+  });
+
+  addChapterBtn.addEventListener('click', addChapterBlock);
 </script>
 
 <?= $this->endSection() ?>

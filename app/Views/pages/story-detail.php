@@ -5,9 +5,9 @@
 <main class="max-w-6xl mx-auto px-6 py-8">
     <!-- Breadcrumb -->
     <nav class="text-xs text-slate-500 mb-6">
-        <a href="<?= base_url() ?>" class="hover:text-slate-900">Beranda</a>
+        <a href="<?= base_url() ?>" class="hover:text-slate-900">Home</a>
         <span class="mx-2">/</span>
-        <a href="<?= base_url('/discover') ?>" class="hover:text-slate-900">Jelajahi</a>
+        <a href="<?= base_url('/discover') ?>" class="hover:text-slate-900">Explore</a>
         <span class="mx-2">/</span>
         <span class="text-slate-700"><?= esc($story['title']) ?></span>
     </nav>
@@ -49,10 +49,13 @@
                     <span class="material-symbols-outlined">star</span>
                     <span class="text-sm font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
                 </div>
+                <!-- Views count removed -->
                 <span class="text-slate-300">•</span>
-                <span class="text-sm text-slate-600"><?= number_format($story['total_views'] ?? 0) ?> tampilan</span>
+                <span class="text-sm text-emerald-700 font-semibold"><?= ucfirst(strtolower($story['publication_status'])) ?></span>
                 <span class="text-slate-300">•</span>
-                <span class="text-sm text-emerald-700 font-semibold"><?= ucfirst(strtolower($story['status'])) ?></span>
+                <span class="text-sm text-slate-700 font-semibold">
+                    <?= isset($chapter_count) ? $chapter_count : ($story['total_chapters'] ?? 0) ?> chapters
+                </span>
             </div>
 
             <p class="text-sm md:text-base text-slate-700 leading-relaxed italic mb-6">
@@ -62,21 +65,58 @@
             <div class="flex flex-wrap gap-3 mb-6">
                 <a href="<?= base_url('/chapter/' . $story['id']) ?>" class="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition-all">
                     <span class="material-symbols-outlined">menu_book</span>
-                    Baca Sekarang
+                    Read Now
                 </a>
-                <button onclick="toggleLibrary(<?= (int)$story['id'] ?>)" id="add-library-btn" class="inline-flex items-center gap-2 <?= $is_bookmarked ? 'bg-accent text-white' : 'bg-white border border-border text-slate-900' ?> px-4 py-2 rounded-lg text-sm font-semibold hover:transition-all">
+                <button onclick="toggleLibraryAjax(<?= (int)$story['id'] ?>)" id="add-library-btn" class="inline-flex items-center gap-2 <?= $is_bookmarked ? 'bg-accent text-white' : 'bg-white border border-border text-slate-900' ?> px-4 py-2 rounded-lg text-sm font-semibold hover:transition-all">
                     <span class="material-symbols-outlined"><?= $is_bookmarked ? 'bookmark_remove' : 'bookmark_add' ?></span>
-                    <?= $is_bookmarked ? 'Hapus dari Perpustakaan' : 'Tambah ke Perpustakaan' ?>
+                    <?= $is_bookmarked ? 'Remove from Library' : 'Add to Library' ?>
                 </button>
-                <button class="inline-flex items-center gap-2 bg-white border border-border text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all">
-                    <span class="material-symbols-outlined">share</span>
-                    Bagikan
-                </button>
-            </div>
+                    <a href="<?= base_url('/report-story/' . $story['id']) ?>" class="inline-flex items-center gap-2 bg-red-100 text-red-700 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-200 transition-all">
+                        <span class="material-symbols-outlined">flag</span>
+                        Report Story
+                    </a>
+            <script>
+            function toggleLibraryAjax(storyId) {
+                const btn = document.getElementById('add-library-btn');
+                const isBookmarked = btn.classList.contains('bg-accent');
+                btn.disabled = true;
+                let url = isBookmarked
+                    ? '<?= base_url('/story/') ?>' + storyId + '/remove-from-library'
+                    : '<?= base_url('/story/') ?>' + storyId + '/add-to-library';
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(res => res.json ? res.json() : res)
+                .then(data => {
+                    if (!isBookmarked) {
+                        btn.classList.add('bg-accent', 'text-white');
+                        btn.classList.remove('bg-white', 'border', 'border-border', 'text-slate-900');
+                        btn.innerHTML = '<span class="material-symbols-outlined">bookmark_remove</span>Remove from Library';
+                    } else {
+                        btn.classList.remove('bg-accent', 'text-white');
+                        btn.classList.add('bg-white', 'border', 'border-border', 'text-slate-900');
+                        btn.innerHTML = '<span class="material-symbols-outlined">bookmark_add</span>Add to Library';
+                    }
+                    btn.disabled = false;
+                    if (data && data.message) {
+                        alert(data.message);
+                    }
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    alert('Failed to update library.');
+                });
+            }
+            </script>
+
 
             <div class="flex flex-wrap gap-2">
-                <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium">Total Bab: <?= $story['total_chapters'] ?? 0 ?></span>
-                <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium">Rating: <?= $story['total_ratings'] ?? 0 ?></span>
             </div>
         </div>
     </section>
@@ -102,8 +142,8 @@
     <!-- Chapters -->
     <section id="chapters" class="mb-14">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl md:text-2xl font-bold text-primary">Bab Terbaru</h2>
-            <a href="<?= base_url('/chapters/' . $story['id']) ?>" class="text-sm font-semibold text-accent hover:underline">Lihat semua →</a>
+            <h2 class="text-xl md:text-2xl font-bold text-primary">Latest Chapters</h2>
+            <a href="<?= base_url('/chapters/' . $story['id']) ?>" class="text-sm font-semibold text-accent hover:underline">See all →</a>
         </div>
         <div class="bg-white border border-border rounded-2xl shadow-sm">
             <ul class="divide-y divide-border">
@@ -111,16 +151,16 @@
                     <?php foreach ($chapters as $chapter): ?>
                         <li class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                             <div>
-                                <p class="text-sm font-semibold text-slate-900">Bab <?= (int)$chapter['chapter_number'] ?> • <?= esc($chapter['title']) ?></p>
+                                <p class="text-sm font-semibold text-slate-900">Chapter <?= (int)$chapter['chapter_number'] ?> • <?= esc($chapter['title']) ?></p>
                                 <p class="text-xs text-slate-500">Updated <?= date('d M Y', strtotime($chapter['created_at'])) ?></p>
                             </div>
                             <a href="<?= base_url('/read-chapter/' . $chapter['id']) ?>" class="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline">
-                                Baca <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                Read <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </a>
                         </li>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <li class="p-4 text-sm text-slate-500">Belum ada bab yang tersedia.</li>
+                    <li class="p-4 text-sm text-slate-500">No chapters available yet.</li>
                 <?php endif; ?>
             </ul>
         </div>
@@ -129,45 +169,51 @@
     <!-- Reviews -->
     <section id="reviews" class="mb-16">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl md:text-2xl font-bold text-primary">Ulasan Pembaca</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-primary">Reader Reviews</h2>
             <?php if (session()->get('isLoggedIn')): ?>
-                <button onclick="openReviewModal()" class="text-sm font-semibold text-accent hover:underline">Tulis ulasan →</button>
+                <button onclick="openReviewModal()" class="text-sm font-semibold text-accent hover:underline">Write a review →</button>
             <?php else: ?>
-                <a href="<?= base_url('/login') ?>" class="text-sm font-semibold text-accent hover:underline">Lihat ulasan →</a>
+                <a href="<?= base_url('/login') ?>" class="text-sm font-semibold text-accent hover:underline">See reviews →</a>
             <?php endif; ?>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="reviews-list">
             <?php if (!empty($reviews)): ?>
                 <?php foreach ($reviews as $review): ?>
-                    <article class="p-5 bg-white border border-border rounded-2xl shadow-sm">
-                        <p class="text-sm text-slate-700 leading-relaxed"><?= esc($review['review']) ?></p>
-                        <div class="flex items-center gap-2 mt-3">
-                            <?php if (!empty($review['user_photo'])): ?>
-                                <img src="<?= profile_url($review['user_photo']) ?>" alt="<?= esc($review['user_name']) ?>" class="w-5 h-5 rounded-full object-cover" />
-                            <?php else: ?>
-                                <div class="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold">
-                                    <?= strtoupper(substr($review['user_name'], 0, 1)) ?>
-                                </div>
-                            <?php endif; ?>
-                            <p class="text-xs text-slate-500">
-                                <span class="font-semibold"><?= esc($review['user_name']) ?></span> • <?= date('d M Y', strtotime($review['created_at'])) ?>
-                            </p>
+                    <article class="p-5 bg-white border border-border rounded-2xl shadow-sm relative">
+                        <div class="flex items-center justify-between mt-3 mb-2">
+                            <div class="flex items-center gap-2">
+                                <?php if (!empty($review['user_photo'])): ?>
+                                    <img src="<?= profile_url($review['user_photo']) ?>" alt="<?= esc($review['user_name']) ?>" class="w-5 h-5 rounded-full object-cover" />
+                                <?php else: ?>
+                                    <div class="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold">
+                                        <?= strtoupper(substr($review['user_name'], 0, 1)) ?>
+                                    </div>
+                                <?php endif; ?>
+                                <span class="text-xs text-slate-500 font-semibold"><?= esc($review['user_name']) ?></span>
+                            </div>
+                            <div class="flex items-center gap-1 text-amber-500 text-xs font-semibold">
+                                <span class="material-symbols-outlined text-base">star</span>
+                                <?= number_format($review['rating'] ?? 0, 1) ?>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed mb-6"><?= esc($review['review']) ?></p>
+                        <div class="absolute bottom-5 right-5 text-xs text-slate-400">
+                            <?= date('d M Y', strtotime($review['created_at'])) ?>
                         </div>
                     </article>
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="col-span-3 text-center text-slate-500 text-sm p-8">
-                    Belum ada ulasan. Jadilah yang pertama memberikan ulasan!
+                    No reviews yet. Be the first to leave a review!
                 </div>
             <?php endif; ?>
-        </div>
     </section>
 
     <!-- Related Stories -->
     <section id="related" class="mb-12">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl md:text-2xl font-bold text-primary">Mungkin Anda juga suka</h2>
-            <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">Jelajahi lainnya →</a>
+            <h2 class="text-xl md:text-2xl font-bold text-primary">You might also like</h2>
+            <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">Explore more →</a>
         </div>
         <div class="flex flex-wrap gap-3">
             <?php if (!empty($related_stories)): ?>
@@ -191,41 +237,13 @@
                     </a>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="text-sm text-slate-500">Tidak ada cerita terkait yang ditemukan.</div>
+                <div class="text-sm text-slate-500">No related stories found.</div>
             <?php endif; ?>
         </div>
     </section>
 </main>
 
-<!-- Review Modal -->
-<div id="review-modal" class="modal-overlay" style="display: none;">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 md:p-8">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl md:text-2xl font-bold text-primary">Tulis Ulasan Anda</h3>
-            <button onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
 
-        <form id="review-form" onsubmit="submitReview(event, <?= (int)$story['id'] ?>)" class="space-y-6">
-            <!-- Review Text -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-3">Ulasan Anda</label>
-                <textarea name="review" id="review-text" rows="4" placeholder="Bagikan pendapat Anda tentang cerita ini..." maxlength="1000" class="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 resize-none text-slate-700"></textarea>
-                <div class="flex justify-between mt-2">
-                    <p id="char-count" class="text-xs text-slate-500">0/1000</p>
-                    <p id="review-error" class="text-xs text-red-600" style="display: none;">Ulasan harus antara 10-1000 karakter</p>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex gap-3 justify-end pt-4">
-                <button type="button" onclick="closeReviewModal()" class="px-4 py-2 rounded-lg border border-border text-slate-700 font-semibold hover:bg-slate-50 transition-all">Batal</button>
-                <button type="submit" class="px-4 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-purple-700 transition-all">Kirim Ulasan</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <style>
 .modal-overlay {
@@ -264,7 +282,7 @@ function submitReview(e, storyId) {
     }
     
     // Submit review via API
-    alert('Ulasan berhasil dikirim!');
+    alert('Review submitted successfully!');
     closeReviewModal();
 }
 
@@ -275,11 +293,11 @@ function toggleLibrary(storyId) {
     if (isBookmarked) {
         btn.classList.remove('bg-accent', 'text-white');
         btn.classList.add('bg-white', 'border', 'border-border', 'text-slate-900');
-        btn.innerHTML = '<span class="material-symbols-outlined">bookmark_add</span>Tambah ke Perpustakaan';
+        btn.innerHTML = '<span class="material-symbols-outlined">bookmark_add</span>Add to Library';
     } else {
         btn.classList.add('bg-accent', 'text-white');
         btn.classList.remove('bg-white', 'border', 'border-border', 'text-slate-900');
-        btn.innerHTML = '<span class="material-symbols-outlined">bookmark_remove</span>Hapus dari Perpustakaan';
+        btn.innerHTML = '<span class="material-symbols-outlined">bookmark_remove</span>Remove from Library';
     }
 }
 </script>

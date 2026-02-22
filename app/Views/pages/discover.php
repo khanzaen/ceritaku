@@ -100,7 +100,7 @@
                 <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
                 <p class="text-[10px] text-slate-500">
                   <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                  <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> dibaca</span>
+                  <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
                 </p>
               </div>
             </div>
@@ -292,7 +292,7 @@
             <div class="flex items-center gap-2 text-sm font-semibold <?= $styles['text_color'] ?>">
               <span class="material-symbols-outlined text-base"><?= $styles['icon'] ?></span><?= $genre ?>
             </div>
-            <span class="text-xs px-2 py-0.5 <?= $styles['light_bg'] ?> <?= $styles['text_color'] ?> rounded-full border <?= $styles['border_color'] ?>">Ratings & Dibaca</span>
+            <span class="text-xs px-2 py-0.5 <?= $styles['light_bg'] ?> <?= $styles['text_color'] ?> rounded-full border <?= $styles['border_color'] ?>">Ratings & Reads</span>
           </div>
           <div class="h-1.5 w-full bg-white rounded-full border <?= $styles['border_color'] ?> mb-4 overflow-hidden">
             <div class="h-full <?= $styles['progress_bar'] ?>" style="width: <?= $progress_width ?>%"></div>
@@ -375,7 +375,7 @@
               <h3 class="text-lg font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
               <p class="text-xs text-slate-500 mb-2">
                 <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> dibaca</span>
+                <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
               </p>
               <p class="text-sm text-slate-600 line-clamp-3 italic"><?= esc(substr($story['description'] ?? '', 0, 100)) ?>...</p>
             </div>

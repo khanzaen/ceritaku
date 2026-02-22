@@ -3,12 +3,10 @@
 <?= $this->section('content') ?>
 
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900">Story Management</h1>
-        <p class="text-sm text-gray-500 mt-1">Kelola semua cerita yang ada di platform</p>
-    </div>
-    <div class="flex items-center gap-2">
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Story Management</h1>
+    <p class="text-sm text-gray-500 mt-1">Kelola semua cerita yang ada di platform</p>
+    <div class="mt-4">
         <select id="filterStatus" onchange="filterStories()" class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
             <option value="">Semua Status</option>
             <option value="PUBLISHED">Published</option>

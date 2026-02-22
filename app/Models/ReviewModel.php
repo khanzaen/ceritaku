@@ -16,7 +16,8 @@ class ReviewModel extends Model
         'story_id',
         'user_id',
         'review',
-        'is_featured'
+        'is_featured',
+        'rating'
     ];
 
     // Dates
@@ -74,7 +75,7 @@ class ReviewModel extends Model
         // Subquery: Dapatkan review_id dengan likes terbanyak per story
         $sql = "
             SELECT 
-                reviews.*,
+                reviews.*, reviews.rating,
                 stories.id as story_id,
                 stories.title as story_title,
                 stories.cover_image,

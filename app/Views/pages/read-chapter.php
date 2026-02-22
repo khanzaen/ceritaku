@@ -12,21 +12,21 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
 
     <div class="grid md:grid-cols-4 gap-8">
 
-        <!-- ═══════════════════════════════
-             SIDEBAR — Daftar Bab
-        ═══════════════════════════════ -->
+           <!-- ═══════════════════════════════
+               SIDEBAR — Chapter List
+           ═══════════════════════════════ -->
         <aside class="md:col-span-1">
             <div class="sticky top-20 space-y-3">
-                <!-- Back — di luar card -->
+                <!-- Back — outside card -->
                 <a href="<?= base_url('/story/' . $chapter['story_id']) ?>"
                    class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors">
                     <span>←</span> Back
                 </a>
 
-                <!-- Card Daftar Bab -->
+                <!-- Chapter List Card -->
                 <div class="bg-white border border-border rounded-2xl shadow-sm">
                 <div class="px-4 py-2 border-b border-border">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Daftar Bab</p>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chapter List</p>
                 </div>
                 <ul class="divide-y divide-border max-h-[60vh] overflow-y-auto" id="chapter-list">
                     <?php foreach ($all_chapters as $c): ?>
@@ -55,22 +55,22 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
         ═══════════════════════════════ -->
         <div class="md:col-span-3 space-y-6">
 
-            <!-- Breadcrumb — sejajar dengan konten -->
+            <!-- Breadcrumb — inline with content -->
             <nav class="text-xs text-slate-500">
-                <a href="<?= base_url() ?>" class="hover:text-slate-900">Beranda</a>
+                <a href="<?= base_url() ?>" class="hover:text-slate-900">Home</a>
                 <span class="mx-2">/</span>
-                <a href="<?= base_url('/discover') ?>" class="hover:text-slate-900">Jelajahi</a>
+                <a href="<?= base_url('/discover') ?>" class="hover:text-slate-900">Discover</a>
                 <span class="mx-2">/</span>
                 <a href="<?= base_url('/story/' . $chapter['story_id']) ?>" class="hover:text-slate-900"><?= esc($chapter['story_title']) ?></a>
                 <span class="mx-2">/</span>
-                <span class="text-slate-700 font-medium">Bab <?= $currentNum ?></span>
+                <span class="text-slate-700 font-medium">Chapter <?= $currentNum ?></span>
             </nav>
             <div class="bg-white border border-border rounded-2xl shadow-sm p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
                             <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-600 rounded">
-                                Bab <?= $currentNum ?>
+                                Chapter <?= $currentNum ?>
                             </span>
                             <?php if (!empty($chapter['is_premium'])): ?>
                                 <span class="px-2 py-0.5 bg-amber-100 text-[10px] font-bold uppercase tracking-wider text-amber-700 rounded">Premium</span>
@@ -78,9 +78,9 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                             <span class="text-[12px] text-slate-400"><?= date('d M Y', strtotime($chapter['created_at'])) ?></span>
                         </div>
                         <h1 class="text-2xl md:text-3xl font-bold text-primary mb-1"><?= esc($chapter['title']) ?></h1>
-                        <p class="text-slate-600 text-sm">dari
+                        <p class="text-slate-600 text-sm">from
                             <a href="<?= base_url('/story/' . $chapter['story_id']) ?>" class="font-medium text-slate-800 hover:text-accent transition-colors"><?= esc($chapter['story_title']) ?></a>
-                            · oleh
+                            · by
                             <a href="<?= base_url('/user/' . $chapter['author_id']) ?>" class="font-medium text-slate-800 hover:text-accent transition-colors"><?= esc($chapter['author_name']) ?></a>
                         </p>
                     </div>
@@ -165,7 +165,7 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                 <?php if (!empty($prev_chapter)): ?>
                     <a href="<?= base_url('/read-chapter/' . $prev_chapter['id']) ?>"
                        class="text-sm font-semibold text-accent hover:underline">
-                        ← Sebelumnya
+                        ← Previous
                     </a>
                 <?php else: ?>
                     <span></span>
@@ -174,10 +174,10 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                 <?php if (!empty($next_chapter)): ?>
                     <a href="<?= base_url('/read-chapter/' . $next_chapter['id']) ?>"
                        class="text-sm font-semibold text-accent hover:underline">
-                        Selanjutnya →
+                        Next →
                     </a>
                 <?php else: ?>
-                    <span class="text-sm text-slate-400 italic">Tamat</span>
+                    <span class="text-sm text-slate-400 italic">End</span>
                 <?php endif; ?>
             </div>
 

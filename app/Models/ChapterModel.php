@@ -6,6 +6,13 @@ use CodeIgniter\Model;
 
 class ChapterModel extends Model
 {
+    /**
+     * Get chapter count per story (all statuses)
+     */
+    public function getChapterCountPerStory(int $storyId): int
+    {
+        return $this->where('story_id', $storyId)->countAllResults();
+    }
     protected $table            = 'chapters';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
@@ -39,7 +46,6 @@ class ChapterModel extends Model
         'content'        => 'required',
         'is_premium'     => 'permit_empty|in_list[0,1]',
         'status'         => 'required|in_list[DRAFT,PUBLISHED,ARCHIVED]'
-        // 'author_note' - DIHAPUS
     ];
     protected $validationMessages   = [];
     protected $skipValidation       = false;

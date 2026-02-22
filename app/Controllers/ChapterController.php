@@ -5,21 +5,18 @@ namespace App\Controllers;
 use App\Models\ChapterModel;
 use App\Models\CommentModel;
 use App\Models\UserLibraryModel;
-use App\Models\ViewModel;
 
 class ChapterController extends BaseController
 {
     protected $chapterModel;
     protected $commentModel;
     protected $libraryModel;
-    protected $viewModel;
 
     public function __construct()
     {
         $this->chapterModel = new ChapterModel();
         $this->commentModel = new CommentModel();
         $this->libraryModel = new UserLibraryModel();
-        $this->viewModel = new ViewModel();
     }
 
     /**
@@ -45,11 +42,6 @@ class ChapterController extends BaseController
         $userId = session()->get('user_id');
         $ipAddress = $this->request->getIPAddress();
         
-        // Only track if not recently viewed
-        if (!$userId || !$this->viewModel->hasRecentView($userId, null, $id, 30)) {
-            $this->viewModel->trackView(null, $id, $userId, $ipAddress);
-        }
-
         // Update user progress
         if ($userId) {
             $this->libraryModel->updateProgress($userId, $chapter['story_id'], $chapter['chapter_number']);
@@ -63,6 +55,7 @@ class ChapterController extends BaseController
             'comments' => $this->commentModel->getCommentsByChapter($id),
             'total_comments' => $this->commentModel->getTotalCommentsByChapter($id),
             'all_chapters' => $this->chapterModel->getChaptersByStory($chapter['story_id']),
+            'chapter_count' => $this->chapterModel->getChapterCountPerStory($chapter['story_id']),
         ];
 
         return view('pages/read-chapter', $data);

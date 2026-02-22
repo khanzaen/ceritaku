@@ -2,14 +2,14 @@
 <?= $this->section('content') ?>
 
 <main class="max-w-6xl mx-auto px-6 py-10">
-  <!-- Pesan sukses -->
+  <!-- Success message -->
   <?php if(session()->getFlashdata('success')): ?>
     <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
       <?= session()->getFlashdata('success') ?>
     </div>
   <?php endif; ?>
 
-  <!-- Pesan error -->
+  <!-- Error message -->
   <?php if(session()->getFlashdata('error')): ?>
     <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
       <?= session()->getFlashdata('error') ?>
@@ -20,17 +20,17 @@
     <h1 class="text-3xl font-bold text-primary">My Stories</h1>
     <a href="<?= site_url('write') ?>" class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2">
       <span class="material-symbols-outlined text-base">add</span>
-      Buat Cerita Baru
+      Create New Story
     </a>
   </div>
 
   <?php if(empty($stories)): ?>
     <div class="text-center py-12 bg-white rounded-2xl border border-border">
       <span class="material-symbols-outlined text-6xl text-slate-300 mb-4 block">menu_book</span>
-      <p class="text-slate-500 mb-4">Anda belum memiliki cerita. Mulai buat cerita pertama Anda!</p>
+      <p class="text-slate-500 mb-4">You don't have any stories yet. Start creating your first story!</p>
       <a href="<?= site_url('write') ?>" class="bg-accent text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2">
         <span class="material-symbols-outlined text-base">edit</span>
-        Tulis Cerita
+        Write Story
       </a>
     </div>
   <?php else: ?>
@@ -66,7 +66,7 @@
             <div class="flex gap-2">
               <a href="<?= site_url('story/' . $story['id']) ?>"
                  class="flex-1 text-center bg-accent/10 text-accent px-3 py-2 rounded-lg text-sm hover:bg-accent/20 transition-colors">
-                Lihat
+                Read
               </a>
               <a href="<?= site_url('story/edit/' . $story['id']) ?>"
                  class="flex-1 text-center bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm hover:bg-slate-200 transition-colors">
@@ -74,7 +74,7 @@
               </a>
               <button onclick="confirmDelete(<?= $story['id'] ?>, '<?= esc($story['title'], 'js') ?>')"
                       class="flex-1 text-center bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm hover:bg-red-100 transition-colors">
-                Hapus
+                Delete
               </button>
             </div>
           </div>
@@ -84,28 +84,28 @@
   <?php endif; ?>
 </main>
 
-<!-- Modal Konfirmasi Delete -->
+<!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
     <div class="flex items-center gap-3 mb-4">
       <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
         <span class="material-symbols-outlined text-red-600">warning</span>
       </div>
-      <h3 class="text-lg font-bold text-primary">Hapus Cerita?</h3>
+      <h3 class="text-lg font-bold text-primary">Delete Story?</h3>
     </div>
-    <p class="text-slate-600 text-sm mb-1">Anda akan menghapus cerita:</p>
+    <p class="text-slate-600 text-sm mb-1">You are about to delete the story:</p>
     <p id="deleteStoryTitle" class="font-semibold text-primary mb-4 line-clamp-2"></p>
-    <p class="text-slate-500 text-xs mb-6">Tindakan ini tidak dapat dibatalkan. Semua chapter dalam cerita ini juga akan ikut terhapus.</p>
+    <p class="text-slate-500 text-xs mb-6">This action cannot be undone. All chapters in this story will also be deleted.</p>
     <div class="flex gap-3">
       <button onclick="closeDeleteModal()"
               class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
-        Batal
+        Cancel
       </button>
       <form id="deleteForm" method="post" class="flex-1">
         <?= csrf_field() ?>
         <button type="submit"
                 class="w-full px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors">
-          Ya, Hapus
+          Yes, Delete
         </button>
       </form>
     </div>
@@ -123,7 +123,7 @@
     document.getElementById('deleteModal').classList.add('hidden');
   }
 
-  // Tutup modal kalau klik area gelap di luar modal
+  // Close modal when clicking outside the modal area
   document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
   });

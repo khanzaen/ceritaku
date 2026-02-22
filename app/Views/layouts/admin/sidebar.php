@@ -68,13 +68,9 @@
     class="fixed top-0 left-0 h-full w-64 bg-[#1e1b4b] text-white z-40 flex flex-col overflow-y-auto">
 
     <!-- Brand -->
-    <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10 flex-shrink-0">
-        <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-            <span class="material-symbols-outlined text-white text-xl">auto_stories</span>
-        </div>
-        <div>
-            <h1 class="font-bold text-lg leading-none">CeritaKu</h1>
-            <p class="text-xs text-indigo-300 mt-0.5">Admin Panel</p>
+    <div class="flex items-center gap-1 px-2 py-7 border-b border-white/10 flex-shrink-0">
+        <div class="w-full flex justify-center">
+            <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu Logo" class="w-24 h-25 object-contain flex-shrink-0" />
         </div>
     </div>
 

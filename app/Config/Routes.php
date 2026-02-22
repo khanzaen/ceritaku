@@ -33,6 +33,8 @@ $routes->get('/story/(:num)', 'StoryController::detail/$1');
 $routes->post('/story/(:num)/rate', 'StoryController::rate/$1');
 $routes->get('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
 $routes->get('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
+$routes->post('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
+$routes->post('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
 
 $routes->get('/chapter/(:num)', 'ChapterController::read/$1');
 $routes->get('/read-chapter/(:num)', 'ChapterController::read/$1');
@@ -53,6 +55,10 @@ $routes->get('/my-comments', 'UserController::comments');
 $routes->get('/profile/edit', 'UserController::editProfile');
 $routes->post('/profile/update', 'UserController::updateProfile');
 $routes->post('/user/(:num)/follow', 'UserController::follow/$1');
+
+// Report Story
+$routes->get('/report-story/(:num)', 'ReportStoryController::index/$1');
+$routes->post('/report-story/submit', 'ReportStoryController::submit');
 
 // Admin Routes
 $routes->group('admin', ['filter' => 'auth'], function($routes) {

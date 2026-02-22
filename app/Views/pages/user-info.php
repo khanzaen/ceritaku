@@ -76,20 +76,14 @@
         </div>
     </div>
 
-    <!-- Menu Navigasi Daftar Cerita & Postingan -->
-    <div class="mb-8">
-        <div class="flex gap-2 border-b border-slate-200" id="nav-tabs">
-            <button type="button" id="tab-stories" class="px-4 py-2 font-semibold text-slate-700 border-b-2 border-purple-600 bg-white focus:outline-none" onclick="showSection('stories')">Daftar Cerita</button>
-            <button type="button" id="tab-posts" class="px-4 py-2 font-semibold text-slate-700 border-b-2 border-transparent bg-white focus:outline-none" onclick="showSection('posts')">Postingan</button>
-        </div>
-    </div>
+    <!-- Stories List Only -->
     <div id="section-stories">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-slate-900">
-                Cerita oleh <?= esc($author['name']) ?>
+                Stories by <?= esc($author['name']) ?>
             </h2>
             <?php if (!empty($stories)): ?>
-                <span class="text-sm text-slate-500"><?= count($stories) ?> cerita</span>
+                <span class="text-sm text-slate-500"><?= count($stories) ?> stories</span>
             <?php endif; ?>
         </div>
         <?php if (!empty($stories)): ?>
@@ -157,35 +151,11 @@
         <?php else: ?>
             <div class="bg-slate-50 rounded-xl p-12 md:p-16 text-center border border-slate-200">
                 <span class="material-symbols-outlined text-5xl md:text-6xl text-slate-300 block mb-4">library_books</span>
-                <p class="text-slate-600 text-base md:text-lg font-medium mb-2">Belum Ada Cerita</p>
-                <p class="text-slate-500 text-sm">Penulis ini belum mempublikasikan cerita apapun</p>
+                <p class="text-slate-600 text-base md:text-lg font-medium mb-2">No Stories Yet</p>
+                <p class="text-slate-500 text-sm">This author has not published any stories</p>
             </div>
         <?php endif; ?>
     </div>
-    <!-- Section: Postingan User (include user-posts.php) -->
-    <div id="section-posts" style="display:none">
-        <?php include(APPPATH . 'Views/pages/user-posts.php'); ?>
-    </div>
-    <script>
-    function showSection(section) {
-        document.getElementById('section-stories').style.display = section === 'stories' ? '' : 'none';
-        document.getElementById('section-posts').style.display = section === 'posts' ? '' : 'none';
-        // Highlight tab aktif
-        document.getElementById('tab-stories').classList.remove('border-purple-600');
-        document.getElementById('tab-stories').classList.add('border-transparent');
-        document.getElementById('tab-posts').classList.remove('border-purple-600');
-        document.getElementById('tab-posts').classList.add('border-transparent');
-        if (section === 'stories') {
-            document.getElementById('tab-stories').classList.remove('border-transparent');
-            document.getElementById('tab-stories').classList.add('border-purple-600');
-        } else {
-            document.getElementById('tab-posts').classList.remove('border-transparent');
-            document.getElementById('tab-posts').classList.add('border-purple-600');
-        }
-    }
-    // Set default tab
-    showSection('stories');
-    </script>
 </div>
 
 <?= $this->endSection() ?>

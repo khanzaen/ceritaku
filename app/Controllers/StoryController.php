@@ -265,9 +265,13 @@ class StoryController extends BaseController
         // Parse genres menjadi array
         $story['genres_array'] = explode(',', $story['genres']);
 
+        $publishedChapters = $this->chapterModel->getChaptersByStory($id, 'PUBLISHED');
+        $draftChapters = $this->chapterModel->getChaptersByStory($id, 'DRAFT');
         $data = [
             'title' => 'Edit Cerita',
             'story' => $story,
+            'published_chapters' => $publishedChapters,
+            'chapters' => $draftChapters,
             'validation' => \Config\Services::validation()
         ];
 
@@ -430,6 +434,7 @@ class StoryController extends BaseController
             'reviews' => $this->reviewModel->getReviewsByStory($id, 3),
             'related_stories' => !empty($primary_genre) ? $this->storyModel->getStoriesByGenre($primary_genre, 6) : [],
             'is_bookmarked' => false,
+            'chapter_count' => $this->chapterModel->getChapterCountPerStory($id),
         ];
 
         // Check if user has bookmarked
@@ -494,15 +499,24 @@ class StoryController extends BaseController
     public function addToLibrary($id)
     {
         if (!session()->get('isLoggedIn')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Please login first']);
+            }
             return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
         }
 
         $userId = session()->get('user_id');
 
         if ($this->libraryModel->addToLibrary($userId, $id)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => true, 'message' => 'Story added to library']);
+            }
             return redirect()->back()->with('success', 'Cerita berhasil ditambahkan ke library');
         }
 
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Story already in your library']);
+        }
         return redirect()->back()->with('error', 'Cerita sudah ada di library Anda');
     }
 
@@ -512,15 +526,24 @@ class StoryController extends BaseController
     public function removeFromLibrary($id)
     {
         if (!session()->get('isLoggedIn')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Please login first']);
+            }
             return redirect()->to('/login');
         }
 
         $userId = session()->get('user_id');
 
         if ($this->libraryModel->removeFromLibrary($userId, $id)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => true, 'message' => 'Story removed from library']);
+            }
             return redirect()->back()->with('success', 'Cerita dihapus dari library');
         }
 
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Failed to remove story from library']);
+        }
         return redirect()->back()->with('error', 'Gagal menghapus cerita dari library');
     }
 

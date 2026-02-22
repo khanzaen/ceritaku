@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span id="hero-words" class="text-yellow-300 opacity-100 transition-opacity duration-500">readers</span>.
                     </h1>
                     <p class="text-base md:text-lg text-white/90 mb-6 leading-relaxed max-w-3xl mx-auto drop-shadow">
-                        Komunitas pembaca bertemu dengan cerita-cerita berkualitas dari penulis independen Indonesia.
+                        A community of readers meets quality stories from independent Indonesian writers.
                     </p>
 
                     <div class="max-w-xl mx-auto">
@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>
                         </form>
                         <div class="mt-3 flex justify-center gap-2 text-[11px] text-white/80 flex-wrap">
-                            <span class="px-2 py-0.5 bg-white/20 backdrop-blur rounded-md"><?= number_format($total_users ?? 0) ?>k+ pembaca</span>
-                            <span class="px-2 py-0.5 bg-white/20 backdrop-blur rounded-md"><?= number_format($total_reviews ?? 0) ?>+ ulasan</span>
-                            <span class="px-2 py-0.5 bg-white/20 backdrop-blur rounded-md"><?= number_format($total_stories ?? 0) ?>+ cerita</span>
+                            <span class="px-2 py-0.5 bg-white/20 backdrop-blur rounded-md"><?= number_format($total_users ?? 0) ?>k+ readers</span>
+                            <span class="px-2 py-0.5 bg-white/20 backdrop-blur rounded-md"><?= number_format($total_reviews ?? 0) ?>+ reviews</span>
+                            <span class="px-2 py-0.5 bg-white/20 backdrop-blur rounded-md"><?= number_format($total_stories ?? 0) ?>+ stories</span>
                         </div>
                     </div>
                 </div>
@@ -110,17 +110,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
                     <a href="<?= base_url('/discover') ?>" class="bg-white text-slate-900 px-5 py-2 rounded-full text-xs font-bold hover:bg-white/90 transition-all inline-flex items-center gap-2 shadow-lg justify-center">
                         <span class="material-symbols-outlined text-base">local_library</span>
-                        Jelajahi Cerita
+                        Explore Stories
                     </a>
                     <button type="button" onclick="openModal('registerModal')" class="bg-white/10 backdrop-blur border-2 border-white text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-slate-900 transition-all inline-flex items-center gap-2 justify-center">
                         <span class="material-symbols-outlined text-base">edit</span>
-                        Mulai Menulis
+                        Start Writing
                     </button>
                 </div>
 
                 <div class="mt-3 text-center">
                     <a href="#discover" class="inline-flex items-center gap-1 text-sm font-bold text-white/80 hover:text-white transition-colors">
-                        Lihat ulasan trending
+                        See trending reviews
                         <span class="material-symbols-outlined text-base">south</span>
                     </a>
                 </div>
@@ -151,12 +151,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </a>
                             <div class="mt-4 text-center">
-                                <span class="text-xs text-slate-500"><?= $review['likes_count'] ?> orang menyetujui</span>
+                                <span class="text-xs text-slate-500"><?= $review['likes_count'] ?> people agree</span>
                             </div>
                         </div>
                         <div class="flex flex-col">
                             <div class="flex items-center gap-2 mb-3">
-                                <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-500 rounded"><?= esc(trim(explode(', ', $review['genres'])[0])) ?></span>
+                                <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-500 rounded">
+                                    <?= esc(trim(explode(', ', $review['genres'])[0])) ?>
+                                </span>
                                 <span class="text-slate-300">|</span>
                                 <div class="flex items-center gap-1.5">
                                     <?php if (!empty($review['user_photo'])): ?>
@@ -176,7 +178,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <span class="text-white text-[9px] font-bold"><?= $initials ?></span>
                                         </div>
                                     <?php endif; ?>
-                                    <span class="text-xs text-slate-600">Diulas oleh <span class="font-semibold text-slate-900"><?= esc($review['user_name']) ?></span></span>
+                                    <span class="text-xs text-slate-600">Reviewed by <span class="font-semibold text-slate-900"><?= esc($review['user_name']) ?></span></span>
+                                    <span class="flex items-center gap-1 text-amber-500 text-xs font-semibold">
                                 </div>
                             </div>
                             <h3 class="text-2xl font-bold text-slate-900 mb-2 leading-tight group-hover:text-accent transition-colors">
@@ -184,26 +187,32 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?= esc($review['story_title']) ?>
                                 </a>
                             </h3>
-                            <p class="text-slate-500 text-sm mb-4">oleh <span class="text-slate-700 font-medium"><?= esc($review['author_name']) ?></span></p>
+                            <p class="text-slate-500 text-sm mb-4">by <span class="text-slate-700 font-medium"><?= esc($review['author_name']) ?></span></p>
+                            <div class="mb-2 flex items-center gap-2">
+                                <span class="flex items-center gap-1 text-amber-500 text-xs font-semibold">
+                                    <span class="material-symbols-outlined text-base">star</span>
+                                    <?= number_format($review['rating'] ?? 0, 1) ?>
+                                </span>
+                            </div>
                             <p class="text-slate-600 text-sm leading-relaxed mb-6 line-clamp-3 italic">
                                 "<?= esc(substr($review['review'], 0, 150)) ?>"
                             </p>
                             <div class="mt-auto">
                                 <a class="inline-flex items-center gap-1 text-sm font-bold text-accent hover:underline" href="<?= base_url('/story/' . $review['story_id']) ?>#reviews">
-                                    Baca Ulasan <span class="material-symbols-outlined text-base">arrow_forward</span>
+                                    Read Review <span class="material-symbols-outlined text-base">arrow_forward</span>
                                 </a>
                             </div>
                         </div>
                     </article>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p class="text-slate-500 col-span-2 text-center py-10">Tidak ada cerita unggulan tersedia untuk saat ini.</p>
+                <p class="text-slate-500 col-span-2 text-center py-10">No featured stories available at the moment.</p>
             <?php endif; ?>
         </div>
 
         <div class="mt-7 text-center">
             <a href="<?= base_url('/discover') ?>" class="bg-white border-2 border-slate-900 text-slate-900 px-8 py-2.5 rounded-full font-bold hover:bg-slate-900 hover:text-white transition-all inline-block">
-                Temukan cerita lainnya
+                Find more stories
             </a>
         </div>
     </section>
@@ -211,8 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Success Stories Section -->
     <section class="max-w-6xl mx-auto px-6 py-16">
         <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">Kisah Sukses Penulis</h2>
-            <p class="text-slate-600 max-w-2xl mx-auto">Ratusan penulis telah menemukan kesuksesan mereka di platform CeritaKu</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">Writer Success Stories</h2>
+            <p class="text-slate-600 max-w-2xl mx-auto">Hundreds of writers have found their success on the CeritaKu platform</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -228,12 +237,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="mb-4">
-                    <p class="text-sm text-slate-700 italic leading-relaxed">"Dimulai dari 50 pembaca, kini cerita saya diikuti lebih dari 120k orang. CeritaKu memberikan platform untuk berbagi passion saya."</p>
+                    <p class="text-sm text-slate-700 italic leading-relaxed">"Started with 50 readers, now my story is followed by more than 120k people. CeritaKu provides a platform to share my passion."</p>
                 </div>
                 <div class="grid grid-cols-3 gap-3 pt-4 border-t border-purple-100">
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">120k</p>
-                        <p class="text-xs text-slate-500">Total Dibaca</p>
+                        <p class="text-xs text-slate-500">Total Reads</p>
                     </div>
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">4.8</p>
@@ -241,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">3</p>
-                        <p class="text-xs text-slate-500">Dipublikasi</p>
+                        <p class="text-xs text-slate-500">Published</p>
                     </div>
                 </div>
             </div>
@@ -258,12 +267,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="mb-4">
-                    <p class="text-sm text-slate-700 italic leading-relaxed">"Dari penulis hobi menjadi penulis terbitan. Feedback komunitas membantu saya meningkatkan kualitas karya dan percaya diri."</p>
+                    <p class="text-sm text-slate-700 italic leading-relaxed">"From hobby writer to published author. Community feedback helped me improve my work and gain confidence."</p>
                 </div>
                 <div class="grid grid-cols-3 gap-3 pt-4 border-t border-blue-100">
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">89k</p>
-                        <p class="text-xs text-slate-500">Total Dibaca</p>
+                        <p class="text-xs text-slate-500">Total Reads</p>
                     </div>
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">4.7</p>
@@ -271,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">5</p>
-                        <p class="text-xs text-slate-500">Dipublikasi</p>
+                        <p class="text-xs text-slate-500">Published</p>
                     </div>
                 </div>
             </div>
@@ -288,12 +297,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="mb-4">
-                    <p class="text-sm text-slate-700 italic leading-relaxed">"Membangun basis penggemar setia sebanyak 5k+ followers. Setiap cerita baru sekarang mencapai ribuan pembaca dalam seminggu pertama!"</p>
+                    <p class="text-sm text-slate-700 italic leading-relaxed">"Built a loyal fanbase of 5k+ followers. Every new story now reaches thousands of readers in the first week!"</p>
                 </div>
                 <div class="grid grid-cols-3 gap-3 pt-4 border-t border-pink-100">
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">215k</p>
-                        <p class="text-xs text-slate-500">Total Dibaca</p>
+                        <p class="text-xs text-slate-500">Total Reads</p>
                     </div>
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">4.9</p>
@@ -301,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="text-center">
                         <p class="text-2xl font-bold text-accent">7</p>
-                        <p class="text-xs text-slate-500">Dipublikasi</p>
+                        <p class="text-xs text-slate-500">Published</p>
                     </div>
                 </div>
             </div>

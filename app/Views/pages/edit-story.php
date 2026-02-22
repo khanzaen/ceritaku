@@ -2,14 +2,14 @@
 <?= $this->section('content') ?>
 
 <main class="max-w-4xl mx-auto px-6 py-10">
-  <!-- Tampilkan pesan error -->
+  <!-- Error message -->
   <?php if(session()->getFlashdata('error')): ?>
     <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
       <?= session()->getFlashdata('error') ?>
     </div>
   <?php endif; ?>
 
-  <!-- Tampilkan validation errors -->
+  <!-- Validation errors -->
   <?php if(session()->getFlashdata('errors')): ?>
     <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
       <ul class="list-disc list-inside">
@@ -104,6 +104,65 @@
       </div>
     </div>
 
+    <!-- Chapters CRUD Section -->
+    <div class="bg-gradient-to-br from-purple-50 to-white border border-border rounded-2xl p-6 shadow-sm mt-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold text-primary">Chapters</h3>
+        <span class="text-xs text-slate-500">Add, edit, or remove chapters for this story</span>
+      </div>
+      <!-- Previously Published Chapters -->
+      <?php if (!empty($story['published_chapters'])): ?>
+        <div class="mb-6">
+          <h4 class="text-xs font-bold text-slate-700 mb-2">Published Chapters</h4>
+          <ul class="divide-y divide-border">
+            <?php foreach ($story['published_chapters'] as $pub): ?>
+              <li class="py-3 px-2 flex items-center justify-between bg-white rounded-lg">
+                <div>
+                  <span class="font-semibold text-primary">Chapter <?= (int)$pub['chapter_number'] ?>:</span>
+                  <span class="text-slate-900"> <?= esc($pub['title']) ?></span>
+                  <span class="text-xs text-slate-500 ml-2">Published <?= date('d M Y', strtotime($pub['published_at'])) ?></span>
+                </div>
+                <a href="<?= base_url('/read-chapter/' . $pub['id']) ?>" target="_blank" class="text-xs text-accent hover:underline">View</a>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        </div>
+      <?php endif; ?>
+      <div id="chapters-list" class="space-y-4">
+        <?php if (!empty($story['chapters'])): ?>
+          <?php foreach ($story['chapters'] as $idx => $chapter): ?>
+            <div class="chapter-block">
+              <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
+              <input type="text" name="chapter-title[]" value="<?= esc($chapter['title']) ?>" placeholder="e.g., Chapter <?= $idx+1 ?>: The Adventure Continues" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
+              <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
+              <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus-ring-accent/30 focus-border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"><?= esc($chapter['content']) ?></textarea>
+              <div class="flex items-center justify-between mt-2">
+                <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
+                <span class="text-xs text-slate-500 word-count">0 words</span>
+              </div>
+              <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all">Remove Chapter</button>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="chapter-block">
+            <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
+            <input type="text" name="chapter-title[]" placeholder="e.g., Chapter 1: The Beginning" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus-border-accent outline-none transition-all text-sm" />
+            <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
+            <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus-ring-accent/30 focus-border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
+            <div class="flex items-center justify-between mt-2">
+              <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
+              <span class="text-xs text-slate-500 word-count">0 words</span>
+            </div>
+            <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all" style="display:none;">Remove Chapter</button>
+          </div>
+        <?php endif; ?>
+      </div>
+      <button type="button" id="add-chapter-btn" class="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-all inline-flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">add</span>
+        Add Chapter
+      </button>
+    </div>
+
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row gap-3 pt-4">
       <a href="<?= site_url('my-stories') ?>" class="flex-1 px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all inline-flex items-center justify-center gap-2">
@@ -129,8 +188,6 @@
   coverInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
       const fileName = e.target.files[0].name;
-      // ✅ Hanya update teks & ikon, JANGAN replace innerHTML
-      // karena akan menghapus <input name="cover"> dari DOM
       const icon = document.getElementById('cover-icon');
       const labelText = document.getElementById('cover-label-text');
       const subText = document.getElementById('cover-sub-text');
@@ -146,6 +203,59 @@
       subText.textContent = 'Click to change image';
     }
   });
+
+  // Dynamic chapter add/remove
+  const chaptersList = document.getElementById('chapters-list');
+  const addChapterBtn = document.getElementById('add-chapter-btn');
+
+  function updateWordCount(textarea, countSpan) {
+    const text = textarea.value.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    countSpan.textContent = words + ' words';
+  }
+
+  function addChapterBlock() {
+    const block = document.createElement('div');
+    block.className = 'chapter-block';
+    block.innerHTML = `
+      <label class="block text-xs font-semibold text-slate-600 mb-2">Chapter Title</label>
+      <input type="text" name="chapter-title[]" placeholder="e.g., Chapter: New Adventure" class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm" />
+      <label class="block text-xs font-semibold text-slate-600 mb-2 mt-4">Chapter Content</label>
+      <textarea name="chapter-content[]" rows="10" placeholder="Start writing your chapter here..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus-ring-accent/30 focus-border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"></textarea>
+      <div class="flex items-center justify-between mt-2">
+        <p class="text-xs text-slate-500">Minimum 500 words recommended</p>
+        <span class="text-xs text-slate-500 word-count">0 words</span>
+      </div>
+      <button type="button" class="remove-chapter-btn mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all">Remove Chapter</button>
+    `;
+    chaptersList.appendChild(block);
+
+    // Word count handler
+    const textarea = block.querySelector('textarea');
+    const countSpan = block.querySelector('.word-count');
+    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
+
+    // Remove button handler
+    const removeBtn = block.querySelector('.remove-chapter-btn');
+    removeBtn.style.display = 'inline-block';
+    removeBtn.addEventListener('click', () => {
+      block.remove();
+    });
+  }
+
+  // Initial chapter blocks
+  chaptersList.querySelectorAll('.chapter-block').forEach(block => {
+    const textarea = block.querySelector('textarea');
+    const countSpan = block.querySelector('.word-count');
+    textarea.addEventListener('input', () => updateWordCount(textarea, countSpan));
+    // Remove button handler
+    const removeBtn = block.querySelector('.remove-chapter-btn');
+    removeBtn.addEventListener('click', () => {
+      block.remove();
+    });
+  });
+
+  addChapterBtn.addEventListener('click', addChapterBlock);
 </script>
 
 <?= $this->endSection() ?>
