@@ -13,33 +13,40 @@ $routes->get('/', 'Home::index');
 $routes->get('files/(:segment)/(:any)', 'FileController::serve/$1/$2');
 
 // Authentication (Shield)
-$routes->group('auth', function($routes) {
+$routes->group('auth', function ($routes) {
     $routes->post('login', 'AuthController::login');
     $routes->post('register', 'AuthController::register');
     $routes->get('logout', 'AuthController::logout');
 });
 
+
 // Stories - Rute
 $routes->get('/write', 'StoryController::write');
-$routes->get('/create-story', 'StoryController::create');
-$routes->post('/create-story', 'StoryController::save');
-$routes->get('/my-stories', 'StoryController::myStories');
-$routes->get('/story/edit/(:num)', 'StoryController::edit/$1');
-$routes->post('/story/update/(:num)', 'StoryController::update/$1');
-$routes->post('/story/delete/(:num)', 'StoryController::delete/$1');
+$routes->group('', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/create-story', 'StoryController::create');
+    $routes->post('/create-story', 'StoryController::save');
+    $routes->get('/my-stories', 'StoryController::myStories');
+    $routes->get('/story/edit/(:num)', 'StoryController::edit/$1');
+    $routes->post('/story/update/(:num)', 'StoryController::update/$1');
+    $routes->post('/story/delete/(:num)', 'StoryController::delete/$1');
+    $routes->get('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
+    $routes->get('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
+    $routes->post('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
+    $routes->post('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
 
+});
 $routes->get('/discover', 'StoryController::discover');
 $routes->get('/discover/all', 'StoryController::allStories');
 $routes->get('/story/(:num)', 'StoryController::detail/$1');
 $routes->post('/story/(:num)/rate', 'StoryController::rate/$1');
-$routes->get('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
-$routes->get('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
-$routes->post('/story/(:num)/add-to-library', 'StoryController::addToLibrary/$1');
-$routes->post('/story/(:num)/remove-from-library', 'StoryController::removeFromLibrary/$1');
 
-$routes->get('/chapter/(:num)', 'ChapterController::read/$1');
-$routes->get('/read-chapter/(:num)', 'ChapterController::read/$1');
-$routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
+
+// Chapters - Rute
+$routes->group('', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/chapter/(:num)', 'ChapterController::read/$1');
+    $routes->get('/read-chapter/(:num)', 'ChapterController::read/$1');
+    $routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
+});
 
 // User/Author Profile
 $routes->get('/user/(:num)', 'UserController::viewUser/$1');
@@ -62,7 +69,7 @@ $routes->get('/report-story/(:num)', 'ReportStoryController::index/$1');
 $routes->post('/report-story/submit', 'ReportStoryController::submit');
 
 // Admin Routes
-$routes->group('admin', ['filter' => 'auth'], function($routes) {
+$routes->group('admin', ['filter' => 'auth'], function ($routes) {
     // Dashboard
     $routes->get('dashboard', 'Admin\Dashboard::index');
 

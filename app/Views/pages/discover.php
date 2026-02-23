@@ -3,42 +3,114 @@
 <?= $this->section('content') ?>
 
 <style>
-/* Featured Slider Styles */
+/* ── Slider ─────────────────────────────────────────────── */
 .featured-slide {
   display: none;
-  animation: fadeIn 0.7s ease-in-out;
+  animation: slideReveal 0.6s cubic-bezier(0.22,1,0.36,1);
 }
+.featured-slide.active { display: block; }
 
-.featured-slide.active {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes slideReveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .slide-dot {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+.slide-dot:hover { transform: scale(1.4); }
 
-.slide-dot:hover {
-  transform: scale(1.3);
-}
-
+/* ── Book card shadow ───────────────────────────────────── */
 .book-card-shadow {
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
 }
+
+/* ── Scroll Reveal ──────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1),
+              transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Stagger delays */
+.d1 { transition-delay: 0.05s; }
+.d2 { transition-delay: 0.12s; }
+.d3 { transition-delay: 0.19s; }
+.d4 { transition-delay: 0.26s; }
+.d5 { transition-delay: 0.33s; }
+.d6 { transition-delay: 0.40s; }
+
+/* ── Genre filter pill hover ────────────────────────────── */
+.genre-pill {
+  transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.15s;
+}
+.genre-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.genre-pill:active { transform: translateY(0); }
+
+/* ── Story card hover lift ──────────────────────────────── */
+.story-card {
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.story-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.1);
+}
+
+/* ── Progress bar animate ───────────────────────────────── */
+.progress-bar-fill {
+  width: 0 !important;
+  transition: width 1s cubic-bezier(0.22,1,0.36,1);
+}
+.progress-bar-fill.animated { width: var(--target-width) !important; }
+
+/* ── Ripple ─────────────────────────────────────────────── */
+.ripple-btn { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple-anim 0.55s linear;
+  background: rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+@keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+
+
+/* ── Author card pulse ring on hover ────────────────────── */
+.author-card {
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.author-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(139,92,246,0.15); }
+.author-avatar {
+  transition: box-shadow 0.25s;
+}
+.author-card:hover .author-avatar {
+  box-shadow: 0 0 0 4px rgba(139,92,246,0.25);
+}
+
+/* ── Search bar focus glow ──────────────────────────────── */
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+}
+
+/* ── Page entrance ──────────────────────────────────────── */
+.page-enter {
+  animation: pageEnter 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 </style>
 
-<main class="max-w-6xl mx-auto px-6 py-10">
+<main class="max-w-6xl mx-auto px-6 py-10 page-enter">
     
     <!-- Search Section -->
     <div class="mb-8">
@@ -48,7 +120,7 @@
             <div class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none">
               <span class="material-symbols-outlined text-slate-400" style="font-size: 16px;">search</span>
             </div>
-            <input name="q" type="text" value="<?= esc($search_query ?? '') ?>" placeholder="Search stories or authors..." class="w-full pl-8 pr-3 py-2 bg-white border border-border rounded-lg focus:ring-1 focus:ring-accent/20 focus:border-accent outline-none transition-all text-xs text-slate-900" />
+            <input name="q" type="text" value="<?= esc($search_query ?? '') ?>" placeholder="Search stories or authors..." class="search-input w-full pl-8 pr-3 py-2 bg-white border border-border rounded-lg focus:ring-1 focus:ring-accent/20 focus:border-accent outline-none transition-all text-xs text-slate-900" />
           </div>
           <button type="submit" class="px-3 py-2 bg-accent text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-all inline-flex items-center gap-1">
             <span class="material-symbols-outlined" style="font-size: 16px;">search</span>
@@ -56,18 +128,18 @@
         </div>
       </form>
       <div class="flex flex-wrap gap-2 items-center">
-        <a href="<?= base_url('/discover') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">All</a>
-        <a href="<?= base_url('/discover?genre=Romance') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Romance</a>
-        <a href="<?= base_url('/discover?genre=Mystery') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Mystery</a>
-        <a href="<?= base_url('/discover?genre=Fantasy') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Fantasy</a>
-        <a href="<?= base_url('/discover?genre=Drama') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Drama</a>
-        <a href="<?= base_url('/discover?genre=Sci-Fi') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Sci-Fi</a>
-        <a href="<?= base_url('/discover?genre=Thriller') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Thriller</a>
-        <a href="<?= base_url('/discover?genre=Horror') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Horror</a>
-        <a href="<?= base_url('/discover?genre=Comedy') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Comedy</a>
-        <a href="<?= base_url('/discover?genre=Adventure') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Adventure</a>
-        <a href="<?= base_url('/discover?genre=Historical') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Historical</a>
-        <a href="<?= base_url('/discover?genre=Adventure') ?>" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Teen</a>      </div>
+        <a href="<?= base_url('/discover') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">All</a>
+        <a href="<?= base_url('/discover?genre=Romance') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Romance</a>
+        <a href="<?= base_url('/discover?genre=Mystery') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Mystery</a>
+        <a href="<?= base_url('/discover?genre=Fantasy') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Fantasy</a>
+        <a href="<?= base_url('/discover?genre=Drama') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Drama</a>
+        <a href="<?= base_url('/discover?genre=Sci-Fi') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Sci-Fi</a>
+        <a href="<?= base_url('/discover?genre=Thriller') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Thriller</a>
+        <a href="<?= base_url('/discover?genre=Horror') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Horror</a>
+        <a href="<?= base_url('/discover?genre=Comedy') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Comedy</a>
+        <a href="<?= base_url('/discover?genre=Adventure') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Adventure</a>
+        <a href="<?= base_url('/discover?genre=Historical') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Historical</a>
+        <a href="<?= base_url('/discover?genre=Adventure') ?>" class="genre-pill px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium hover:bg-accent hover:text-white transition-all cursor-pointer">Teen</a>      </div>
     </div>
     
     <!-- Search Results Section -->
@@ -175,7 +247,7 @@
     <?php if (empty($search_query) && empty($current_genre)): ?>
     
     <!-- Featured Story Hero Section -->
-    <section class="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-2xl border border-border mb-10 shadow-lg overflow-hidden">
+    <section class="reveal bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-2xl border border-border mb-10 shadow-lg overflow-hidden">
       <div class="relative">
         <div id="featured-slider" class="transition-all duration-700 ease-in-out">
           <?php 
@@ -241,7 +313,7 @@
     </section>
 
     <!-- Top picks this week -->
-    <section class="mb-14">
+    <section class="mb-14 reveal">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl md:text-3xl font-bold text-primary">Top picks this week</h2>
         <a href="<?= base_url('/discover/all') ?>" class="text-sm font-semibold text-accent hover:underline">See all →</a>
@@ -258,7 +330,7 @@
             $badge_color = $badge_colors[min($index, 3)];
           ?>
           <a href="<?= base_url('/story/' . $story['id']) ?>" class="block">
-            <div class="w-[180px] flex-none p-3 rounded-xl border border-border bg-gradient-to-br <?= $bg_color ?> via-white to-white shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+            <div class="story-card w-[180px] flex-none p-3 rounded-xl border border-border bg-gradient-to-br <?= $bg_color ?> via-white to-white shadow-sm">
               <div class="relative w-full aspect-[2/3] rounded overflow-hidden bg-slate-100 book-card-shadow mb-3 group">
                 <?php if (!empty($story['cover_image'])): ?>
                   <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -288,7 +360,7 @@
     </section>
 
     <!-- Trending by genre -->
-    <section class="mb-14">
+    <section class="mb-14 reveal">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl md:text-3xl font-bold text-primary">Trending by genre</h2>
         <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">Browse all →</a>
@@ -345,7 +417,7 @@
             <span class="text-xs px-2 py-0.5 <?= $styles['light_bg'] ?> <?= $styles['text_color'] ?> rounded-full border <?= $styles['border_color'] ?>">Ratings & Reads</span>
           </div>
           <div class="h-1.5 w-full bg-white rounded-full border <?= $styles['border_color'] ?> mb-4 overflow-hidden">
-            <div class="h-full <?= $styles['progress_bar'] ?>" style="width: <?= $progress_width ?>%"></div>
+            <div class="progress-bar-fill h-full <?= $styles['progress_bar'] ?>" style="--target-width: <?= $progress_width ?>%"></div>
           </div>
           <ul class="space-y-3 text-sm text-slate-800">
             <?php 
@@ -391,7 +463,7 @@
     </section>
 
     <!-- Latest releases -->
-    <section class="mb-14">
+    <section class="mb-14 reveal">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl md:text-3xl font-bold text-primary">Latest releases</h2>
         <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">View all →</a>
@@ -404,7 +476,7 @@
             $first_genre = trim($first_genre);
         ?>
         <a href="<?= base_url('/story/' . $story['id']) ?>" class="block">
-          <article class="p-5 bg-white border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow flex gap-4">
+          <article class="story-card p-5 bg-white border border-border rounded-2xl shadow-sm flex gap-4">
             <div class="w-20 flex-none">
               <div class="aspect-[2/3] bg-slate-100 rounded-lg overflow-hidden book-card-shadow">
                 <?php if (!empty($story['cover_image'])): ?>
@@ -445,7 +517,7 @@
     </section>
 
     <!-- Popular Authors -->
-    <section class="mb-14">
+    <section class="mb-14 reveal">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl md:text-3xl font-bold text-primary">Popular Authors</h2>
         <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">View all →</a>
@@ -463,9 +535,9 @@
             }
         ?>
         <a href="<?= base_url('/profile/' . $author['id']) ?>" class="block">
-          <div class="bg-white border border-border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 p-4 text-center">
+          <div class="author-card bg-white border border-border rounded-2xl shadow-sm p-4 text-center">
             <!-- Author Avatar -->
-            <div class="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600">
+            <div class="author-avatar w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden border-2 border-accent flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600">
               <?php if (!empty($author['profile_photo'])): ?>
                 <img src="<?= profile_url($author['profile_photo']) ?>" alt="<?= esc($author['name']) ?>" class="w-full h-full object-cover" />
               <?php else: ?>
@@ -499,8 +571,8 @@
 </main>
 
 <script>
+/* ── Featured Stories Slider ────────────────────────────── */
 <?php if (empty($search_query) && count($stories) > 1): ?>
-// Featured Stories Slider
 let currentSlide = 0;
 let autoSlideInterval;
 const slides = document.querySelectorAll('.featured-slide');
@@ -508,58 +580,58 @@ const dots = document.querySelectorAll('.slide-dot');
 const totalSlides = slides.length;
 
 function showSlide(index) {
-  slides.forEach(slide => slide.classList.remove('active'));
-  dots.forEach(dot => {
-    dot.classList.remove('bg-purple-600');
-    dot.classList.add('bg-slate-300');
-  });
-  
+  slides.forEach(s => s.classList.remove('active'));
+  dots.forEach(d => { d.classList.remove('bg-purple-600'); d.classList.add('bg-slate-300'); });
   slides[index].classList.add('active');
   dots[index].classList.remove('bg-slate-300');
   dots[index].classList.add('bg-purple-600');
   currentSlide = index;
 }
-
-function nextSlide() {
-  let next = (currentSlide + 1) % totalSlides;
-  showSlide(next);
-  resetAutoSlide();
-}
-
-function prevSlide() {
-  let prev = (currentSlide - 1 + totalSlides) % totalSlides;
-  showSlide(prev);
-  resetAutoSlide();
-}
-
-function goToSlide(index) {
-  showSlide(index);
-  resetAutoSlide();
-}
-
-function startAutoSlide() {
-  autoSlideInterval = setInterval(() => {
-    nextSlide();
-  }, 5000);
-}
-
-function resetAutoSlide() {
-  clearInterval(autoSlideInterval);
-  startAutoSlide();
-}
+function nextSlide() { showSlide((currentSlide + 1) % totalSlides); resetAutoSlide(); }
+function prevSlide() { showSlide((currentSlide - 1 + totalSlides) % totalSlides); resetAutoSlide(); }
+function goToSlide(i) { showSlide(i); resetAutoSlide(); }
+function startAutoSlide() { autoSlideInterval = setInterval(nextSlide, 5000); }
+function resetAutoSlide() { clearInterval(autoSlideInterval); startAutoSlide(); }
 
 showSlide(0);
 startAutoSlide();
 
 const slider = document.getElementById('featured-slider');
-slider.addEventListener('mouseenter', () => {
-  clearInterval(autoSlideInterval);
-});
-
-slider.addEventListener('mouseleave', () => {
-  startAutoSlide();
-});
+if (slider) {
+  slider.addEventListener('mouseenter', () => clearInterval(autoSlideInterval));
+  slider.addEventListener('mouseleave', startAutoSlide);
+}
 <?php endif; ?>
+
+/* ── Scroll Reveal ──────────────────────────────────────── */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('visible');
+    // animate progress bars inside revealed sections
+    entry.target.querySelectorAll('.progress-bar-fill').forEach(bar => {
+      bar.classList.add('animated');
+    });
+    revealObs.unobserve(entry.target);
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ── Ripple ─────────────────────────────────────────────── */
+document.querySelectorAll('.ripple-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top  - size / 2;
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    r.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 600);
+  });
+});
 </script>
 
 <?= $this->endSection() ?>
