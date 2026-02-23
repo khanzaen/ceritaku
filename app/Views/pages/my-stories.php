@@ -39,7 +39,7 @@
             <p class="text-xs font-semibold tracking-widest text-accent uppercase mb-1">Dashboard</p>
             <h1 class="text-3xl font-bold text-primary">My Stories</h1>
         </div>
-        <a href="<?= site_url('write') ?>"
+        <a href="<?= site_url('create-story') ?>"
            class="bg-accent text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition-colors inline-flex items-center gap-2 text-sm font-semibold shadow-sm">
             <span class="material-symbols-outlined text-base">add</span>
             Create New Story
