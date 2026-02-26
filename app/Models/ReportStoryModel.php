@@ -15,10 +15,11 @@ class ReportStoryModel extends Model
     protected $allowedFields = [
         'story_id',
         'user_id',
-        'reason',
-        'details',
-        'created_at',
-        'updated_at',
+        'report_reason',
+        'description',
+        'evidence_image',
+        'status',
+        'admin_note',
     ];
 
     // Dates
@@ -29,8 +30,8 @@ class ReportStoryModel extends Model
 
     // Validation (optional)
     protected $validationRules = [
-        'story_id' => 'required|integer',
-        'reason'   => 'required',
+        'story_id'      => 'required|integer',
+        'report_reason' => 'required',
     ];
     protected $validationMessages = [];
     protected $skipValidation = false;

@@ -84,7 +84,7 @@
                             </div>
 
                             <!-- Button -->
-                            <a href="<?= base_url('/story/' . $item['story_id']) ?>"
+                            <a href="<?= base_url('/chapter/' . $item['last_chapter_id']) ?>"
                                onclick="event.stopPropagation()"
                                class="block w-full text-center text-xs font-semibold py-2 rounded-xl bg-accent text-white hover:bg-purple-700 transition-colors">
                                 <?= $item['progress_percent'] > 0 ? 'Continue Reading' : 'Start Reading' ?>

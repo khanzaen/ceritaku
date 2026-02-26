@@ -38,6 +38,9 @@
         <div>
             <p class="text-xs font-semibold tracking-widest text-accent uppercase mb-1">Dashboard</p>
             <h1 class="text-3xl font-bold text-primary">My Stories</h1>
+            <p class="text-slate-400 text-sm mt-1">
+                <?= count($published ?? []) ?> published &nbsp;·&nbsp; <?= count($drafts ?? []) ?> draft
+            </p>
         </div>
         <a href="<?= site_url('create-story') ?>"
            class="bg-accent text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition-colors inline-flex items-center gap-2 text-sm font-semibold shadow-sm">
@@ -46,13 +49,15 @@
         </a>
     </div>
 
-    <?php if(empty($stories)): ?>
+    <?php $allStories = array_merge($published ?? [], $drafts ?? []); ?>
+
+    <?php if(empty($allStories)): ?>
         <!-- Empty State -->
         <div class="text-center py-20 bg-white rounded-2xl border border-border">
             <span class="material-symbols-outlined text-[64px] text-slate-200 mb-4 block">menu_book</span>
             <h2 class="text-lg font-bold text-primary mb-2">No stories yet</h2>
             <p class="text-slate-400 text-sm mb-6">Start writing your first story and share it with the world.</p>
-            <a href="<?= site_url('write') ?>"
+            <a href="<?= site_url('create-story') ?>"
                class="bg-accent text-white px-6 py-2.5 rounded-xl hover:bg-purple-700 transition-colors inline-flex items-center gap-2 text-sm font-semibold">
                 <span class="material-symbols-outlined text-base">edit</span>
                 Write a Story
@@ -62,11 +67,13 @@
     <?php else: ?>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <?php foreach($stories as $story): ?>
-                <div class="story-card bg-white rounded-2xl border border-border overflow-hidden flex flex-col">
+            <?php foreach($allStories as $story): ?>
+                <?php $isDraft = $story['status'] !== 'PUBLISHED'; ?>
+
+                <div class="story-card bg-white rounded-2xl border border-border overflow-hidden flex flex-col <?= $isDraft ? 'opacity-80' : '' ?>">
 
                     <!-- Cover -->
-                    <div class="overflow-hidden h-44 bg-gradient-to-br from-purple-50 to-slate-100 flex-shrink-0">
+                    <div class="relative overflow-hidden h-44 bg-gradient-to-br from-purple-50 to-slate-100 flex-shrink-0">
                         <?php if($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])): ?>
                             <img src="<?= base_url('uploads/' . $story['cover_image']) ?>"
                                  alt="<?= esc($story['title']) ?>"
@@ -76,16 +83,22 @@
                                 <span class="material-symbols-outlined text-[56px] text-slate-300">menu_book</span>
                             </div>
                         <?php endif; ?>
+
+                        <!-- Draft overlay -->
+                        <?php if($isDraft): ?>
+                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <span class="text-white font-black text-xl tracking-widest uppercase border-2 border-white/70 px-4 py-1 rounded-lg rotate-[-8deg] opacity-90">
+                                    Draft
+                                </span>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Content -->
                     <div class="p-4 flex flex-col flex-1">
 
-                        <!-- Badges -->
+                        <!-- Badge publication status -->
                         <div class="flex flex-wrap gap-1.5 mb-2">
-                            <span class="px-2 py-0.5 bg-<?= $story['system_badge']['color'] ?>-100 text-<?= $story['system_badge']['color'] ?>-700 rounded-full text-[10px] font-semibold">
-                                <?= $story['system_badge']['text'] ?>
-                            </span>
                             <span class="px-2 py-0.5 bg-<?= $story['publication_badge']['color'] ?>-100 text-<?= $story['publication_badge']['color'] ?>-700 rounded-full text-[10px] font-semibold">
                                 <?= $story['publication_badge']['text'] ?>
                             </span>
@@ -96,10 +109,12 @@
 
                         <!-- Actions -->
                         <div class="flex gap-2 mt-auto">
-                            <a href="<?= site_url('story/' . $story['id']) ?>"
-                               class="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
-                                Read
-                            </a>
+                            <?php if(!$isDraft): ?>
+                                <a href="<?= site_url('story/' . $story['id']) ?>"
+                                   class="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
+                                    Read
+                                </a>
+                            <?php endif; ?>
                             <a href="<?= site_url('story/edit/' . $story['id']) ?>"
                                class="flex-1 text-center text-xs font-semibold py-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
                                 Edit

@@ -159,6 +159,23 @@ class UserLibraryModel extends Model
     }
 
     /**
+     * Get chapter_id of last read chapter based on progress (chapter_number)
+     * Returns chapter id or null if no progress yet
+     */
+    public function getLastReadChapterId(int $userId, int $storyId): ?int
+    {
+        $entry = $this->getProgress($userId, $storyId);
+        if (!$entry || (int)$entry['progress'] === 0) return null;
+
+        $chapterModel = new \App\Models\ChapterModel();
+        $chapter = $chapterModel->where('story_id', $storyId)
+            ->where('chapter_number', (int)$entry['progress'])
+            ->first();
+
+        return $chapter ? (int)$chapter['id'] : null;
+    }
+
+    /**
      * Get progress percent for a story in user's library
      * Returns integer percent (0-100)
      */

@@ -1,28 +1,29 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Models\ChapterModel;
 use App\Models\CommentModel;
-use App\Models\UserLibraryModel;
 use App\Models\StoryModel;
+use App\Models\UserLibraryModel;
 
 class ChapterController extends BaseController
 {
     protected $chapterModel;
     protected $commentModel;
-    protected $libraryModel;
     protected $storyModel;
+    protected $libraryModel;
 
     public function __construct()
     {
         $this->chapterModel = new ChapterModel();
         $this->commentModel = new CommentModel();
-        $this->libraryModel = new UserLibraryModel();
         $this->storyModel   = new StoryModel();
+        $this->libraryModel = new UserLibraryModel();
     }
 
     /**
-     * Read chapter
+     * Read chapter (public)
      */
     public function read($id)
     {
@@ -32,25 +33,19 @@ class ChapterController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Chapter not found');
         }
 
-        // Require login for all chapters
         if (!session()->get('isLoggedIn')) {
             return redirect()->to('/login')->with('error', 'Silakan login untuk membaca chapter');
         }
 
         $userId = session()->get('user_id');
 
-        // Update user progress
         if ($userId) {
             $this->libraryModel->updateProgress($userId, $chapter['story_id'], $chapter['chapter_number']);
         }
 
-        // Ambil data story lengkap (termasuk cover_image) untuk hero banner di view
-        $story = $this->storyModel->getStoryWithDetails($chapter['story_id']);
-
         $data = [
             'title'          => $chapter['title'] . ' - ' . $chapter['story_title'],
             'chapter'        => $chapter,
-            'story'          => $story,
             'next_chapter'   => $this->chapterModel->getNextChapter($chapter['story_id'], $chapter['chapter_number']),
             'prev_chapter'   => $this->chapterModel->getPreviousChapter($chapter['story_id'], $chapter['chapter_number']),
             'comments'       => $this->commentModel->getCommentsByChapter($id),
@@ -59,7 +54,200 @@ class ChapterController extends BaseController
             'chapter_count'  => $this->chapterModel->getChapterCountPerStory($chapter['story_id']),
         ];
 
-        return view('pages/read-chapter', $data);
+        return view('pages/chapter/read', $data);
+    }
+
+    /**
+     * Form tambah chapter baru
+     */
+    public function create($storyId)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story = $this->storyModel->find($storyId);
+
+        if (!$story) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
+        }
+
+        if ($story['author_id'] != session()->get('user_id')) {
+            return redirect()->to('/my-stories')->with('error', 'Anda tidak memiliki akses ke cerita ini');
+        }
+
+        // Hitung chapter berikutnya
+        $nextNumber = $this->chapterModel->where('story_id', $storyId)->countAllResults() + 1;
+
+        $data = [
+            'title'        => 'Tambah Chapter - ' . $story['title'],
+            'story'        => $story,
+            'next_number'  => $nextNumber,
+            'chapter'      => null,
+            'validation'   => \Config\Services::validation(),
+        ];
+
+        return view('pages/chapter/create', $data);
+    }
+
+    /**
+     * Simpan chapter baru
+     */
+    public function save($storyId)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story = $this->storyModel->find($storyId);
+
+        if (!$story || $story['author_id'] != session()->get('user_id')) {
+            return redirect()->to('/my-stories')->with('error', 'Akses ditolak');
+        }
+
+        $rules = [
+            'chapter_title'   => 'required|min_length[3]|max_length[150]',
+            'chapter_content' => 'required|min_length[10]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $nextNumber = $this->chapterModel->where('story_id', $storyId)->countAllResults() + 1;
+        $isDraft    = $this->request->getPost('save_draft') ? true : false;
+
+        $chapterData = [
+            'story_id'       => $storyId,
+            'title'          => $this->request->getPost('chapter_title'),
+            'content'        => $this->request->getPost('chapter_content'),
+            'chapter_number' => $nextNumber,
+            'is_premium'     => $this->request->getPost('is_premium') ? 1 : 0,
+            'status'         => $isDraft ? 'DRAFT' : 'PUBLISHED',
+        ];
+
+        if ($this->chapterModel->insert($chapterData)) {
+            $msg = $isDraft ? 'Chapter berhasil disimpan sebagai draft' : 'Chapter berhasil dipublikasikan';
+            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', $msg);
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal menyimpan chapter');
+    }
+
+    /**
+     * Form edit chapter
+     */
+    public function edit($storyId, $chapterId)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story   = $this->storyModel->find($storyId);
+        $chapter = $this->chapterModel->find($chapterId);
+
+        if (!$story || !$chapter) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Not found');
+        }
+
+        if ($story['author_id'] != session()->get('user_id')) {
+            return redirect()->to('/my-stories')->with('error', 'Anda tidak memiliki akses ke cerita ini');
+        }
+
+        if ($chapter['story_id'] != $storyId) {
+            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('error', 'Chapter tidak ditemukan');
+        }
+
+        $data = [
+            'title'      => 'Edit Chapter - ' . $chapter['title'],
+            'story'      => $story,
+            'chapter'    => $chapter,
+            'validation' => \Config\Services::validation(),
+        ];
+
+        return view('pages/chapter/edit', $data);
+    }
+
+    /**
+     * Update chapter
+     */
+    public function update($storyId, $chapterId)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story   = $this->storyModel->find($storyId);
+        $chapter = $this->chapterModel->find($chapterId);
+
+        if (!$story || !$chapter || $story['author_id'] != session()->get('user_id') || $chapter['story_id'] != $storyId) {
+            return redirect()->to('/my-stories')->with('error', 'Akses ditolak');
+        }
+
+        $rules = [
+            'chapter_title'   => 'required|min_length[3]|max_length[150]',
+            'chapter_content' => 'required|min_length[10]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $isDraft = $this->request->getPost('save_draft') ? true : false;
+
+        $updateData = [
+            'title'      => $this->request->getPost('chapter_title'),
+            'content'    => $this->request->getPost('chapter_content'),
+            'is_premium' => $this->request->getPost('is_premium') ? 1 : 0,
+            'status'     => $isDraft ? 'DRAFT' : 'PUBLISHED',
+        ];
+
+        if ($this->chapterModel->update($chapterId, $updateData)) {
+            $msg = $isDraft ? 'Chapter disimpan sebagai draft' : 'Chapter berhasil diperbarui';
+            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', $msg);
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui chapter');
+    }
+
+    /**
+     * Hapus chapter
+     */
+    public function deleteChapter($storyId, $chapterId)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story   = $this->storyModel->find($storyId);
+        $chapter = $this->chapterModel->find($chapterId);
+
+        if (!$story || !$chapter || $story['author_id'] != session()->get('user_id') || $chapter['story_id'] != $storyId) {
+            return redirect()->to('/my-stories')->with('error', 'Akses ditolak');
+        }
+
+        if ($this->chapterModel->delete($chapterId)) {
+            // Reorder chapter numbers
+            $this->reorderChapters($storyId);
+            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', 'Chapter berhasil dihapus');
+        }
+
+        return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('error', 'Gagal menghapus chapter');
+    }
+
+    /**
+     * Reorder chapter_number setelah delete
+     */
+    private function reorderChapters($storyId)
+    {
+        $chapters = $this->chapterModel
+            ->where('story_id', $storyId)
+            ->orderBy('chapter_number', 'ASC')
+            ->findAll();
+
+        foreach ($chapters as $i => $ch) {
+            $this->chapterModel->update($ch['id'], ['chapter_number' => $i + 1]);
+        }
     }
 
     /**
@@ -71,13 +259,10 @@ class ChapterController extends BaseController
             return redirect()->to('/login')->with('error', 'Silakan login untuk berkomentar');
         }
 
-        $comment = $this->request->getPost('comment');
-        $userId  = session()->get('user_id');
-
         $data = [
             'chapter_id' => $id,
-            'user_id'    => $userId,
-            'comment'    => $comment,
+            'user_id'    => session()->get('user_id'),
+            'comment'    => $this->request->getPost('comment'),
         ];
 
         if ($this->commentModel->insert($data)) {

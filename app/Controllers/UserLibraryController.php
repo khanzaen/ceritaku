@@ -19,14 +19,12 @@ class UserLibraryController extends Controller
         // Inject progress_percent for each item
         foreach ($library as &$item) {
             $item['progress_percent'] = $libraryModel->getProgressPercent($userId, $item['story_id']);
-            // description sudah otomatis dari getUserLibrary
+            $item['last_chapter_id'] = $libraryModel->getLastReadChapterId($userId, $item['story_id']);
         }
         unset($item);
-        return view('pages/my-library', [
+        return view('pages/user/my-library', [
             'title' => 'My Library',
             'library' => $library
         ]);
     }
 }
-
-    

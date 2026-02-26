@@ -41,12 +41,6 @@ class UserController extends BaseController
 
         $stories = $this->storyModel->getStoriesByAuthor($id, 'PUBLISHED');
 
-        // Ambil postingan milik user ini
-        $postModel = new \App\Models\UserPostModel();
-        $posts = $postModel->where('user_id', $id)
-                          ->orderBy('created_at', 'DESC')
-                          ->findAll();
-
         // Calculate total reads
         $totalReads = 0;
         foreach ($stories as $story) {
@@ -59,10 +53,10 @@ class UserController extends BaseController
             'stories' => $stories,
             'total_stories' => count($stories),
             'total_reads' => $totalReads,
-            'posts' => $posts,
+            'posts' => [],
         ];
 
-        return view('pages/user-info', $data);
+        return view('pages/user/user-info', $data);
     }
 
     /**
@@ -98,7 +92,11 @@ class UserController extends BaseController
             'followers' => 0, // TODO: Implement followers feature
         ];
 
-        return view('pages/user-info', $data);
+        // Profil sendiri pakai my-profile, profil orang lain pakai user-info
+        $isOwnProfile = session()->get('isLoggedIn') && session()->get('user_id') == $id;
+        $viewFile = $isOwnProfile ? 'pages/user/my-profile' : 'pages/user/user-info';
+
+        return view($viewFile, $data);
     }
 
     /**
@@ -180,7 +178,7 @@ class UserController extends BaseController
             'user' => $user,
         ];
 
-        return view('user/edit_profile', $data);
+        return view('pages/user/edit-profile', $data);
     }
 
     /**
@@ -214,15 +212,16 @@ class UserController extends BaseController
         $file = $this->request->getFile('profile_photo');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = $file->getRandomName();
-            $file->move('public/uploads/profiles', $newName);
-            $data['profile_photo'] = 'uploads/profiles/' . $newName;
+            $file->move(FCPATH . 'uploads/profiles', $newName);
+            $data['profile_photo'] = 'profiles/' . $newName;
         }
 
-        if ($this->userModel->update($userId, $data)) {
+        if ($this->userModel->skipValidation(true)->update($userId, $data)) {
             // Update session
             session()->set('name', $data['name']);
+            session()->set('user_name', $data['name']);
             if (isset($data['profile_photo'])) {
-                session()->set('profile_photo', $data['profile_photo']);
+                session()->set('user_photo', $data['profile_photo']);
             }
 
             return redirect()->to('/profile')->with('success', 'Profile berhasil diupdate');

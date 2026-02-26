@@ -19,20 +19,35 @@ class ReportStoryController extends BaseController
      */
     public function submit()
     {
-        $storyId = $this->request->getPost('story_id');
-        $reason = $this->request->getPost('reason');
-        $details = $this->request->getPost('details');
-        $userId = session()->get('user_id');
+        $storyId     = $this->request->getPost('story_id');
+        $reason      = $this->request->getPost('report_reason');
+        $description = $this->request->getPost('description');
+        $userId      = session()->get('user_id');
 
         if (!$storyId || !$reason) {
             return redirect()->back()->with('error', 'Please select a reason.');
         }
 
+        // Handle evidence image upload
+        $evidencePath = null;
+        $evidence = $this->request->getFile('evidence_image');
+        if ($evidence && $evidence->isValid() && !$evidence->hasMoved()) {
+            $uploadPath = FCPATH . 'uploads/evidence';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            $newName = $evidence->getRandomName();
+            $evidence->move($uploadPath, $newName);
+            $evidencePath = 'evidence/' . $newName;
+        }
+
         $data = [
-            'story_id' => $storyId,
-            'user_id' => $userId,
-            'reason' => $reason,
-            'details' => $details,
+            'story_id'       => $storyId,
+            'user_id'        => $userId,
+            'report_reason'  => $reason,
+            'description'    => $description,
+            'evidence_image' => $evidencePath,
+            'status'         => 'pending',
         ];
 
         if ($this->reportModel->insert($data)) {

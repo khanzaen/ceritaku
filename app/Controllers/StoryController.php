@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Models\StoryModel;
@@ -39,7 +40,7 @@ class StoryController extends BaseController
             'title' => 'Write'
         ];
 
-        return view('pages/write', $data);
+        return view('pages/write.php', $data);
     }
     public function create()
     {
@@ -52,7 +53,7 @@ class StoryController extends BaseController
             'title' => 'Write' 
         ];
 
-        return view('pages/create-story', $data);
+        return view('pages/story/create', $data);
     }
 
     /**
@@ -143,7 +144,7 @@ class StoryController extends BaseController
         }
         // Proses genre - gabungkan menjadi string dengan koma
         $genres = $this->request->getPost('genre');
-        $genresString = implode(',', $genres);
+        $genresString = implode(', ', array_map('ucfirst', $genres));
 
         // Mapping publication_status dari form
         $publicationStatus = $this->request->getPost('status');
@@ -180,29 +181,38 @@ class StoryController extends BaseController
                 throw new \Exception('Gagal menyimpan cerita');
             }
 
-            // Proses chapter pertama jika ada
-            $chapterContent = $this->request->getPost('chapter-content');
+            // Proses chapter - form mengirim array (chapter-title[], chapter-content[])
+            $chapterContents = $this->request->getPost('chapter-content');
+            $chapterTitles   = $this->request->getPost('chapter-title');
 
-            if (!empty($chapterContent)) {
-                $chapterTitle = $this->request->getPost('chapter-title');
-                if (empty($chapterTitle)) {
-                    $chapterCount = $this->chapterModel->where('story_id', $storyId)->countAllResults();
-                    $chapterTitle = 'Chapter ' . ($chapterCount + 1);
+            // Normalisasi ke array
+            if (!is_array($chapterContents)) {
+                $chapterContents = $chapterContents ? [$chapterContents] : [];
+            }
+            if (!is_array($chapterTitles)) {
+                $chapterTitles = $chapterTitles ? [$chapterTitles] : [];
+            }
+
+            foreach ($chapterContents as $index => $chapterContent) {
+                if (empty(trim($chapterContent))) {
+                    continue; // Skip chapter kosong
                 }
 
+                $chapterTitle = isset($chapterTitles[$index]) && !empty(trim($chapterTitles[$index]))
+                    ? trim($chapterTitles[$index])
+                    : 'Chapter ' . ($index + 1);
+
                 $chapterData = [
-                    'story_id' => $storyId,
-                    'title' => $chapterTitle,
-                    'content' => $chapterContent,
-                    'is_premium' => $this->request->getPost('is_premium') ? 1 : 0,
-                    'status' => $systemStatus,
-                    'chapter_number' => 1,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
+                    'story_id'       => $storyId,
+                    'title'          => $chapterTitle,
+                    'content'        => $chapterContent,
+                    'is_premium'     => 0,
+                    'status'         => $systemStatus,
+                    'chapter_number' => $index + 1,
                 ];
 
                 if (!$this->chapterModel->insert($chapterData)) {
-                    throw new \Exception('Gagal menyimpan chapter');
+                    throw new \Exception('Gagal menyimpan chapter ' . ($index + 1));
                 }
             }
 
@@ -253,29 +263,32 @@ class StoryController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
         }
 
-        // Cek apakah user adalah pemilik story
         if ($story['author_id'] != session()->get('user_id')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses ke cerita ini');
         }
 
-        // Parse genres menjadi array
-        $story['genres_array'] = explode(',', $story['genres']);
+        $story['genres_array'] = array_map('trim', explode(',', $story['genres']));
 
-        $publishedChapters = $this->chapterModel->getChaptersByStory($id, 'PUBLISHED');
-        $draftChapters = $this->chapterModel->getChaptersByStory($id, 'DRAFT');
+        // Ambil semua chapter (published + draft) diurutkan by chapter_number
+        $allChapters = $this->chapterModel
+            ->where('story_id', $id)
+            ->orderBy('chapter_number', 'ASC')
+            ->findAll();
+
         $data = [
-            'title' => 'Edit Cerita',
-            'story' => $story,
-            'published_chapters' => $publishedChapters,
-            'chapters' => $draftChapters,
-            'validation' => \Config\Services::validation()
+            'title'      => 'Edit Cerita',
+            'story'      => $story,
+            'chapters'   => $allChapters,
+            'validation' => \Config\Services::validation(),
         ];
 
-        return view('pages/edit-story', $data);
+        return view('pages/story/edit', $data);
     }
-
     /**
      * Update story
+     */
+    /**
+     * Update story detail saja (tidak termasuk chapter)
      */
     public function update($id)
     {
@@ -289,12 +302,10 @@ class StoryController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
         }
 
-        // Cek kepemilikan
         if ($story['author_id'] != session()->get('user_id')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses ke cerita ini');
         }
 
-        // Validasi
         $rules = [
             'title'              => 'required|min_length[3]|max_length[150]',
             'synopsis'           => 'required|min_length[10]',
@@ -314,11 +325,9 @@ class StoryController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Proses genre
-        $genres = $this->request->getPost('genre');
-        $genresString = implode(',', $genres);
+        $genres      = $this->request->getPost('genre');
+        $genresString = implode(', ', array_map('ucfirst', $genres));
 
-        // Data update story
         $updateData = [
             'title'              => $this->request->getPost('title'),
             'description'        => $this->request->getPost('synopsis'),
@@ -326,125 +335,37 @@ class StoryController extends BaseController
             'publication_status' => $this->request->getPost('publication_status'),
         ];
 
-        // Proses cover baru jika ada
         $cover = $this->request->getFile('cover');
         if ($cover && $cover->isValid() && !$cover->hasMoved()) {
             if ($cover->getSize() > 5 * 1024 * 1024) {
                 return redirect()->back()->withInput()->with('error', 'Ukuran file maksimal 5MB');
             }
+
             $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
             if (!in_array($cover->getMimeType(), $allowedTypes)) {
                 return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
             }
+
             if ($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])) {
                 unlink(FCPATH . 'uploads/' . $story['cover_image']);
             }
+
             $uploadPath = FCPATH . 'uploads/covers';
             if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
             }
+
             $newName = $cover->getRandomName();
             $cover->move($uploadPath, $newName);
             $updateData['cover_image'] = 'covers/' . $newName;
         }
 
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        try {
-            // Update story
-            if (!$this->storyModel->update($id, $updateData)) {
-                throw new \Exception('Gagal memperbarui cerita');
-            }
-
-            // ── 1. Hapus chapter yang ditandai delete ──────────────────────
-            $deleteIds = $this->request->getPost('delete_chapter_ids');
-            if (!empty($deleteIds)) {
-                foreach ((array)$deleteIds as $chapterId) {
-                    $chapterId = (int)$chapterId;
-                    if ($chapterId > 0) {
-                        $this->chapterModel
-                            ->where('story_id', $id)
-                            ->where('id', $chapterId)
-                            ->delete();
-                    }
-                }
-            }
-
-            // ── 2. Update chapter yang sudah ada ───────────────────────────
-            $existingIds     = (array)($this->request->getPost('existing_chapter_id')      ?? []);
-            $existingTitles  = (array)($this->request->getPost('existing_chapter_title')   ?? []);
-            $existingContent = (array)($this->request->getPost('existing_chapter_content') ?? []);
-            $existingStatus  = (array)($this->request->getPost('existing_chapter_status')  ?? []);
-
-            foreach ($existingIds as $i => $chapterId) {
-                $chapterId = (int)$chapterId;
-                if ($chapterId <= 0) continue;
-
-                $existingChapter = $this->chapterModel
-                    ->where('story_id', $id)
-                    ->where('id', $chapterId)
-                    ->first();
-                if (!$existingChapter) continue;
-
-                $chTitle   = trim($existingTitles[$i]  ?? '');
-                $chContent = trim($existingContent[$i] ?? '');
-                $chStatus  = in_array($existingStatus[$i] ?? '', ['DRAFT', 'PUBLISHED'])
-                             ? $existingStatus[$i]
-                             : $existingChapter['status'];
-
-                if ($chTitle !== '' && $chContent !== '') {
-                    $this->chapterModel->update($chapterId, [
-                        'title'      => $chTitle,
-                        'content'    => $chContent,
-                        'status'     => $chStatus,
-                        'updated_at' => date('Y-m-d H:i:s'),
-                    ]);
-                }
-            }
-
-            // ── 3. Insert chapter baru ─────────────────────────────────────
-            $newTitles   = (array)($this->request->getPost('new_chapter_title')   ?? []);
-            $newContents = (array)($this->request->getPost('new_chapter_content') ?? []);
-            $newStatuses = (array)($this->request->getPost('new_chapter_status')  ?? []);
-
-            $chapterCount = $this->chapterModel->where('story_id', $id)->countAllResults();
-
-            foreach ($newTitles as $i => $newTitle) {
-                $newTitle   = trim($newTitle);
-                $newContent = trim($newContents[$i] ?? '');
-                $newSt      = in_array($newStatuses[$i] ?? '', ['DRAFT', 'PUBLISHED'])
-                              ? $newStatuses[$i]
-                              : 'DRAFT';
-
-                if ($newTitle !== '' && $newContent !== '') {
-                    $chapterCount++;
-                    $this->chapterModel->insert([
-                        'story_id'       => $id,
-                        'title'          => $newTitle,
-                        'chapter_number' => $chapterCount,
-                        'content'        => $newContent,
-                        'status'         => $newSt,
-                        'is_premium'     => 0,
-                        'created_at'     => date('Y-m-d H:i:s'),
-                        'updated_at'     => date('Y-m-d H:i:s'),
-                    ]);
-                }
-            }
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                throw new \Exception('Transaksi database gagal');
-            }
-
-            return redirect()->to('/story/edit/' . $id)->with('success', 'Cerita berhasil diperbarui!');
-
-        } catch (\Exception $e) {
-            $db->transRollback();
-            log_message('error', 'Error updating story: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui cerita: ' . $e->getMessage());
+        if ($this->storyModel->update($id, $updateData)) {
+            // Balik ke tab detail setelah update
+            return redirect()->to('/story/edit/' . $id . '?tab=detail')->with('success', 'Detail cerita berhasil diperbarui');
         }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui cerita');
     }
 
     /**
@@ -456,35 +377,36 @@ class StoryController extends BaseController
             return redirect()->to('/login');
         }
 
-        $userId = session()->get('user_id');
-        $stories = $this->storyModel->where('author_id', $userId)
+        $userId    = session()->get('user_id');
+        $allStories = $this->storyModel->where('author_id', $userId)
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        // Tambahkan badge color untuk setiap story
-        foreach ($stories as &$story) {
-            $statusBadge = [
-                'DRAFT' => ['color' => 'gray', 'text' => 'Draft'],
-                'PUBLISHED' => ['color' => 'green', 'text' => 'Published'],
-                'ARCHIVED' => ['color' => 'red', 'text' => 'Archived']
-            ];
+        $published = [];
+        $drafts    = [];
 
-            $pubStatusBadge = [
-                'Ongoing' => ['color' => 'green', 'text' => 'Ongoing'],
-                'Completed' => ['color' => 'blue', 'text' => 'Completed'],
-                'On Hiatus' => ['color' => 'yellow', 'text' => 'Hiatus']
-            ];
+        $pubStatusBadge = [
+            'Ongoing'   => ['color' => 'green',  'text' => 'Ongoing'],
+            'Completed' => ['color' => 'blue',   'text' => 'Completed'],
+            'On Hiatus' => ['color' => 'yellow', 'text' => 'Hiatus'],
+        ];
 
-            $story['system_badge'] = $statusBadge[$story['status']] ?? ['color' => 'gray', 'text' => $story['status']];
+        foreach ($allStories as &$story) {
             $story['publication_badge'] = $pubStatusBadge[$story['publication_status']] ?? ['color' => 'gray', 'text' => $story['publication_status']];
+            if ($story['status'] === 'PUBLISHED') {
+                $published[] = $story;
+            } else {
+                $drafts[] = $story;
+            }
         }
 
         $data = [
-            'title' => 'Cerita Saya',
-            'stories' => $stories
+            'title'     => 'Cerita Saya',
+            'published' => $published,
+            'drafts'    => $drafts,
         ];
 
-        return view('pages/my-stories', $data);
+        return view('pages/user/my-stories', $data);
     }
 
     /**
@@ -528,7 +450,7 @@ class StoryController extends BaseController
             $data['user_progress'] = $this->libraryModel->getProgress($userId, $id);
         }
 
-        return view('pages/story-detail', $data);
+        return view('pages/story/detail', $data);
     }
 
     /**
@@ -646,21 +568,6 @@ class StoryController extends BaseController
         $rating = $this->request->getPost('rating');
         $userId = session()->get('user_id');
 
-        // RatingModel removed, handle rating via reviews
-        // Implement logic to save rating in reviews table here
-        // Example:
-        // $review = $this->reviewModel->where(['user_id' => $userId, 'story_id' => $id])->first();
-        // if ($review) {
-        //     $this->reviewModel->update($review['id'], ['rating' => $rating]);
-        // } else {
-        //     $this->reviewModel->insert(['user_id' => $userId, 'story_id' => $id, 'rating' => $rating]);
-        // }
-        // $newAvg = $this->reviewModel->where('story_id', $id)->selectAvg('rating')->first()['rating'];
-        // return $this->response->setJSON([
-        //     'success' => true,
-        //     'message' => 'Rating berhasil disimpan',
-        //     'avg_rating' => $newAvg
-        // ]);
         return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan rating']);
     }
 
@@ -709,6 +616,6 @@ class StoryController extends BaseController
             'title' => 'Semua Cerita',
             'stories' => $stories
         ];
-        return view('pages/all-stories', $data);
+        return view('pages/story/all-stories', $data);
     }
 }

@@ -70,22 +70,7 @@
     <!-- Brand -->
     <div class="flex items-center gap-1 px-2 py-7 border-b border-white/10 flex-shrink-0">
         <div class="w-full flex justify-center">
-            <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu Logo" class="w-24 h-25 object-contain flex-shrink-0" />
-        </div>
-    </div>
-
-    <!-- Admin info -->
-    <div class="px-6 py-4 border-b border-white/10 flex-shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/40 rounded-full flex items-center justify-center flex-shrink-0">
-                <span class="text-white font-bold text-sm">
-                    <?= strtoupper(substr(session()->get('user_name') ?? 'A', 0, 1)) ?>
-                </span>
-            </div>
-            <div class="min-w-0">
-                <p class="font-semibold text-sm truncate"><?= esc(session()->get('user_name') ?? 'Admin') ?></p>
-                <span class="text-[10px] bg-primary/50 text-indigo-200 px-2 py-0.5 rounded-full">Administrator</span>
-            </div>
+            <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu Logo" class="h-24 object-contain flex-shrink-0" />
         </div>
     </div>
 
