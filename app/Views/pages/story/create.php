@@ -38,7 +38,6 @@
 
   <form action="<?= site_url('create-story') ?>" method="post" enctype="multipart/form-data" class="space-y-6">
     <?= csrf_field() ?>
-    
     <!-- Story Title -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <label for="title" class="block text-sm font-bold text-primary mb-2">Story Title *</label>
@@ -49,7 +48,7 @@
     <!-- Story Description -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <label for="synopsis" class="block text-sm font-bold text-primary mb-2">Story Description *</label>
-      <textarea id="synopsis" name="synopsis" rows="4" placeholder="Write a brief description of your story..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none" required maxlength="1000"><?= old('synopsis') ?></textarea>
+      <textarea id="synopsis" name="synopsis" rows="4" placeholder="Write a brief description of your story..." class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus-border-accent outline-none transition-all text-sm resize-none" required maxlength="1000"><?= old('synopsis') ?></textarea>
       <p class="text-xs text-slate-500 mt-2">A compelling synopsis helps readers discover your story.</p>
     </div>
 
@@ -88,24 +87,9 @@
       </div>
     </div>
 
-    <!-- Story Status (Publication Status) -->
-    <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
-      <label class="block text-sm font-bold text-primary mb-4">Story Status *</label>
-      <div class="flex flex-wrap gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="status" value="ongoing" <?= old('status') == 'ongoing' ? 'checked' : 'checked' ?> class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
-          <span class="text-sm text-slate-700">Ongoing</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="status" value="completed" <?= old('status') == 'completed' ? 'checked' : '' ?> class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
-          <span class="text-sm text-slate-700">Completed</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="status" value="hiatus" <?= old('status') == 'hiatus' ? 'checked' : '' ?> class="w-4 h-4 text-accent focus:ring-2 focus:ring-accent/30" />
-          <span class="text-sm text-slate-700">On Hiatus</span>
-        </label>
-      </div>
-    </div>
+    <!-- Hidden status input, set by button click -->
+    <!-- Status diatur via JS saat tombol diklik. Default DRAFT agar aman jika JS tidak berjalan. -->
+    <input type="hidden" name="status" id="story-status-input" value="DRAFT" />
 
     <!-- Chapters Section -->
     <div class="bg-gradient-to-br from-purple-50 to-white border border-border rounded-2xl p-6 shadow-sm">
@@ -132,15 +116,15 @@
       </button>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Action Buttons: Save as Draft and Submit for Review -->
     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-      <button type="submit" name="save_draft" value="1" class="flex-1 px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all inline-flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-base">visibility</span>
-        Save as Draft
+      <button type="submit" id="save-draft-btn" class="flex-1 px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all inline-flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base">save</span>
+        Simpan sebagai Draft
       </button>
-      <button type="submit" class="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-purple-700 transition-all inline-flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-base">publish</span>
-        Publish
+      <button type="submit" id="submit-review-btn" class="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-purple-700 transition-all inline-flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base">send</span>
+        Kirim untuk Review
       </button>
     </div>
     <p class="text-xs text-slate-500 text-center">By creating a story, you agree to our <a href="#" class="text-accent hover:underline">Terms of Service</a> and <a href="#" class="text-accent hover:underline">Content Guidelines</a>.</p>
@@ -230,6 +214,19 @@
   });
 
   addChapterBtn.addEventListener('click', addChapterBlock);
+  // Set status value based on which button is clicked
+  const statusInput = document.getElementById('story-status-input');
+  const saveDraftBtn = document.getElementById('save-draft-btn');
+  const submitReviewBtn = document.getElementById('submit-review-btn');
+  if (saveDraftBtn && submitReviewBtn && statusInput) {
+    // Set status SEBELUM form submit berdasarkan tombol yang diklik
+    saveDraftBtn.addEventListener('click', function() {
+      statusInput.value = 'DRAFT';
+    });
+    submitReviewBtn.addEventListener('click', function() {
+      statusInput.value = 'PENDING_REVIEW';
+    });
+  }
 </script>
 
 <?= $this->endSection() ?>

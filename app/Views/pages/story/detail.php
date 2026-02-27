@@ -1,5 +1,4 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
 <main class="max-w-6xl mx-auto px-6 py-8">
@@ -69,10 +68,24 @@
                         Read Now
                     </button>
                 <?php else: ?>
-                    <a href="<?= base_url('/chapter/' . $story['id']) ?>" class="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition-all">
-                        <span class="material-symbols-outlined">menu_book</span>
-                        Read Now
-                    </a>
+                    <?php
+                    // Find first chapter id
+                    $firstChapterId = null;
+                    if (!empty($chapters) && is_array($chapters)) {
+                        $firstChapterId = $chapters[0]['id'] ?? null;
+                    }
+                    ?>
+                    <?php if ($firstChapterId): ?>
+                        <a href="<?= base_url('/read-chapter/' . $firstChapterId) ?>" class="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition-all">
+                            <span class="material-symbols-outlined">menu_book</span>
+                            Read Now
+                        </a>
+                    <?php else: ?>
+                        <span class="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold opacity-50 cursor-not-allowed">
+                            <span class="material-symbols-outlined">menu_book</span>
+                            Read Now
+                        </span>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <?php if (!session()->get('isLoggedIn')): ?>
                     <button type="button" onclick="openModal('loginModal')" class="inline-flex items-center gap-2 bg-white border border-border text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold hover:transition-all">
@@ -247,6 +260,27 @@
                                         </button>
                                     </div>
                                 <?php endif; ?>
+                                <!-- Like button for reviews (not for own review) -->
+                                <?php if (!$isOwner && session()->get('isLoggedIn')): ?>
+                                    <button onclick="toggleLikeReview(<?= $review['id'] ?>, this)"
+                                        class="flex flex-col items-center gap-0.5 absolute left-2 bottom-2 z-10 bg-white/90 border border-rose-100 rounded-xl shadow-md px-2 py-1 hover:bg-rose-50 transition-all group"
+                                        title="Like Review"
+                                        style="min-width:38px; min-height:38px; box-shadow:0 2px 8px 0 rgba(220,38,120,0.07);">
+                                        <span class="material-symbols-outlined text-base group-[.liked]:text-rose-600" id="like-icon-<?= $review['id'] ?>">
+                                            favorite<?= !empty($review['is_liked']) ? '' : '_border' ?>
+                                        </span>
+                                        <span id="like-count-<?= $review['id'] ?>" class="text-[11px] font-semibold text-rose-500 leading-none">
+                                            <?= (int)($review['like_count'] ?? 0) ?>
+                                        </span>
+                                    </button>
+                                <?php elseif (!$isOwner): ?>
+                                    <span class="flex flex-col items-center gap-0.5 absolute left-2 bottom-2 z-10 bg-white/90 border border-slate-100 rounded-xl shadow-md px-2 py-1" style="min-width:38px; min-height:38px; box-shadow:0 2px 8px 0 rgba(120,120,120,0.07);">
+                                        <span class="material-symbols-outlined text-base">favorite_border</span>
+                                        <span id="like-count-<?= $review['id'] ?>" class="text-[11px] font-semibold text-slate-400 leading-none">
+                                            <?= (int)($review['like_count'] ?? 0) ?>
+                                        </span>
+                                    </span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <p class="text-sm text-slate-700 leading-relaxed mb-6"><?= esc($review['review']) ?></p>
@@ -354,6 +388,37 @@ function toggleLibrary(storyId) {
     }
 }
 </script>
+
+// Like/Unlike review AJAX
+function toggleLikeReview(reviewId, btn) {
+    const icon = document.getElementById('like-icon-' + reviewId);
+    const countSpan = document.getElementById('like-count-' + reviewId);
+    const liked = icon.textContent === 'favorite';
+    btn.disabled = true;
+    fetch('<?= base_url('/review/like/') ?>' + reviewId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+        },
+        body: JSON.stringify({ action: liked ? 'unlike' : 'like' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            icon.textContent = data.liked ? 'favorite' : 'favorite_border';
+            countSpan.textContent = data.like_count;
+        } else if (data.message) {
+            alert(data.message);
+        }
+        btn.disabled = false;
+    })
+    .catch(() => {
+        btn.disabled = false;
+        alert('Failed to update like.');
+    });
+}
 
 <!-- Report Story Modal -->
 <div id="reportStoryModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">

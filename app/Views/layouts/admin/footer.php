@@ -1,7 +1,7 @@
-    <footer class="bg-white border-t border-gray-200 mt-auto">
-        <div class="px-4 lg:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p class="text-xs text-gray-500">
-                &copy; <?= date('Y') ?> <span class="font-semibold text-[#6c5ce7]">CeritaKu</span>. All rights reserved.
-            </p>
-        </div>
-    </footer>
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="py-4 px-4 lg:px-6 mt-auto">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+        <span>© <?= date('Y') ?> <span class="font-semibold text-violet-400">CeritaKu</span>. All rights reserved.</span>
+        <span>Admin Panel v1.0</span>
+    </div>
+</footer>

@@ -43,12 +43,12 @@
                         <?php if (!empty($author['bio'])): ?>
                             <p class="text-slate-700 leading-relaxed mb-4 max-w-2xl"><?= nl2br(esc($author['bio'])) ?></p>
                         <?php else: ?>
-                            <p class="text-slate-400 italic mb-4">Belum ada bio. <a href="<?= base_url('/profile/edit') ?>" class="text-accent hover:underline">Tambahkan bio</a></p>
+                            <p class="text-slate-400 italic mb-4">No bio yet. <a href="<?= base_url('/profile/edit') ?>" class="text-accent hover:underline">Add bio</a></p>
                         <?php endif; ?>
 
                         <div class="flex items-center justify-center md:justify-start gap-1 text-sm text-slate-500">
                             <span class="material-symbols-outlined text-sm">calendar_today</span>
-                            <span>Bergabung sejak <?= date('F Y', strtotime($author['created_at'])) ?></span>
+                            <span>Joined <?= date('F Y', strtotime($author['created_at'])) ?></span>
                         </div>
                     </div>
 
@@ -68,11 +68,11 @@
         <div class="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-200">
             <div class="text-center">
                 <p class="text-2xl md:text-3xl font-bold text-slate-900"><?= number_format($total_stories ?? 0) ?></p>
-                <p class="text-xs md:text-sm text-slate-600 mt-1">Cerita</p>
+                <p class="text-xs md:text-sm text-slate-600 mt-1">Stories</p>
             </div>
             <div class="text-center">
                 <p class="text-2xl md:text-3xl font-bold text-slate-900"><?= number_format($total_reads ?? 0) ?></p>
-                <p class="text-xs md:text-sm text-slate-600 mt-1">Total Dibaca</p>
+                <p class="text-xs md:text-sm text-slate-600 mt-1">Total Reads</p>
             </div>
             <div class="text-center">
                 <a href="<?= base_url('/my-library') ?>" class="block hover:opacity-75 transition-opacity">
@@ -97,7 +97,7 @@
             <?php endif; ?>
             <a href="<?= base_url('/my-stories') ?>"
                class="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline">
-                Kelola Cerita
+                Manage Stories
                 <span class="material-symbols-outlined text-sm">arrow_forward</span>
             </a>
         </div>
@@ -154,12 +154,12 @@
     <?php else: ?>
         <div class="bg-slate-50 rounded-xl p-12 md:p-16 text-center border border-slate-200">
             <span class="material-symbols-outlined text-5xl md:text-6xl text-slate-300 block mb-4">library_books</span>
-            <p class="text-slate-600 text-base md:text-lg font-medium mb-2">Belum Ada Cerita</p>
-            <p class="text-slate-500 text-sm mb-6">Mulai tulis cerita pertama kamu!</p>
+            <p class="text-slate-600 text-base md:text-lg font-medium mb-2">No Stories Yet</p>
+            <p class="text-slate-500 text-sm mb-6">Start writing your first story!</p>
             <a href="<?= base_url('/create-story') ?>"
                class="inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-semibold rounded-xl hover:bg-purple-700 transition-all">
                 <span class="material-symbols-outlined text-base">add</span>
-                Buat Cerita
+                Create Story
             </a>
         </div>
     <?php endif; ?>

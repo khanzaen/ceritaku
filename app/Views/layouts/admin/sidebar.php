@@ -1,210 +1,130 @@
-<!DOCTYPE html>
-<html lang="id" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Admin Panel') ?> – CeritaKu Admin</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary:  { DEFAULT: '#6c5ce7', dark: '#5a4bd1' },
-                        sidebar:  { DEFAULT: '#1e1b4b', light: '#2d2a5e', hover: '#3730a3' },
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- Google Material Symbols -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-
-        /* Sidebar scrollbar */
-        #admin-sidebar::-webkit-scrollbar { width: 4px; }
-        #admin-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-
-        /* Active nav link */
-        .nav-link.active {
-            background: rgba(109, 92, 231, 0.3);
-            border-left: 3px solid #6c5ce7;
-        }
-        .nav-link { border-left: 3px solid transparent; }
-
-        /* Sidebar collapse transition */
-        #admin-sidebar { transition: width 0.3s ease; }
-
-        /* Mobile overlay */
-        #sidebar-overlay { display: none; }
-        @media (max-width: 1023px) {
-            #admin-sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
-            #admin-sidebar.open { transform: translateX(0); }
-            #sidebar-overlay.show { display: block; }
-        }
-
-        /* Content area */
-        #main-content { transition: margin-left 0.3s ease; }
-    </style>
-</head>
-<body class="h-full bg-gray-100">
-
-<!-- Mobile Overlay -->
-<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 lg:hidden" onclick="closeSidebar()"></div>
-
-<!-- ===================== SIDEBAR ===================== -->
-<aside id="admin-sidebar"
-    class="fixed top-0 left-0 h-full w-64 bg-[#1e1b4b] text-white z-40 flex flex-col overflow-y-auto">
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside id="admin-sidebar" class="fixed top-0 left-0 h-full w-64 text-gray-700 z-40 flex flex-col overflow-y-auto">
 
     <!-- Brand -->
-    <div class="flex items-center gap-1 px-2 py-7 border-b border-white/10 flex-shrink-0">
-        <div class="w-full flex justify-center">
-            <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu Logo" class="h-24 object-contain flex-shrink-0" />
+    <div class="brand-section flex items-center justify-center px-6 py-6 flex-shrink-0">
+        <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu" class="h-14 object-contain"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <!-- Fallback wordmark -->
+        <div style="display:none" class="items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-900/40">
+                <span class="material-symbols-rounded text-white text-base"
+                    style="font-variation-settings:'FILL' 1">auto_stories</span>
+            </div>
+            <span class="text-base font-extrabold tracking-tight text-gray-800">Cerita<span
+                    class="text-violet-400">Ku</span></span>
         </div>
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-3 py-4 space-y-1">
-        <p class="px-3 mb-2 text-[10px] font-semibold text-indigo-400 uppercase tracking-widest">Main Menu</p>
+    <nav class="flex-1 px-3 pb-4">
+
+        <p class="nav-section-label">Main Menu</p>
 
         <a href="<?= base_url('/admin/dashboard') ?>"
-            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-all group <?= (uri_string() === 'admin/dashboard') ? 'active' : '' ?>">
-            <span class="material-symbols-outlined text-xl group-hover:text-primary">dashboard</span>
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= (uri_string() === 'admin/dashboard') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">dashboard</span>
             Dashboard
         </a>
 
-        <p class="px-3 mt-4 mb-2 text-[10px] font-semibold text-indigo-400 uppercase tracking-widest">Konten</p>
+        <p class="nav-section-label">Content</p>
 
         <a href="<?= base_url('/admin/stories') ?>"
-            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-all group <?= str_contains(uri_string(), 'admin/stories') ? 'active' : '' ?>">
-            <span class="material-symbols-outlined text-xl group-hover:text-primary">menu_book</span>
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/stories') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">menu_book</span>
             Story Management
         </a>
 
         <a href="<?= base_url('/admin/chapters') ?>"
-            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-all group <?= str_contains(uri_string(), 'admin/chapters') ? 'active' : '' ?>">
-            <span class="material-symbols-outlined text-xl group-hover:text-primary">article</span>
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/chapters') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">article</span>
             Chapter Management
         </a>
 
         <a href="<?= base_url('/admin/reviews') ?>"
-            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-all group <?= str_contains(uri_string(), 'admin/reviews') ? 'active' : '' ?>">
-            <span class="material-symbols-outlined text-xl group-hover:text-primary">rate_review</span>
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/reviews') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">rate_review</span>
             Review Management
         </a>
 
-        <p class="px-3 mt-4 mb-2 text-[10px] font-semibold text-indigo-400 uppercase tracking-widest">Pengguna</p>
+        <a href="<?= base_url('/admin/reports') ?>"
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/reports') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">report</span>
+            Report Story Management
+        </a>
+
+        <a href="<?= base_url('/admin/comments') ?>"
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/comments') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">comment</span>
+            Comment Management
+        </a>
+
+        <a href="<?= base_url('/admin/library') ?>"
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/library') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">library_books</span>
+            Library Management
+        </a>
+
+        <p class="nav-section-label">User</p>
 
         <a href="<?= base_url('/admin/users') ?>"
-            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-all group <?= str_contains(uri_string(), 'admin/users') ? 'active' : '' ?>">
-            <span class="material-symbols-outlined text-xl group-hover:text-primary">group</span>
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5
+                <?= str_contains(uri_string(), 'admin/users') ? 'active' : '' ?>">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400"
+                style="font-variation-settings:'FILL' 1">group</span>
             User Management
         </a>
 
-        <p class="px-3 mt-4 mb-2 text-[10px] font-semibold text-indigo-400 uppercase tracking-widest">Sistem</p>
+        <p class="nav-section-label">Sistem</p>
 
         <a href="<?= base_url('/') ?>" target="_blank"
-            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-all group">
-            <span class="material-symbols-outlined text-xl group-hover:text-primary">open_in_new</span>
-            Lihat Website
+            class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 mb-0.5">
+            <span class="nav-icon material-symbols-rounded text-xl text-violet-400">open_in_new</span>
+            See Website
         </a>
     </nav>
 
-    <!-- Logout -->
-    <div class="px-3 py-4 border-t border-white/10 flex-shrink-0">
+    <!-- User card + Logout -->
+    <div class="px-3 py-4 flex-shrink-0" style="border-top: 1px solid #ede9fe">
+        <!-- User info mini card -->
+        <div class="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl" style="background: #f5f3ff">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 text-white"
+                style="background: linear-gradient(135deg,#6c5ce7,#a855f7)">
+                <?= strtoupper(substr(session()->get('user_name') ?? 'A', 0, 1)) ?>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">
+                    <?= esc(session()->get('user_name') ?? 'Admin') ?>
+                </p>
+                <p class="text-[11px] text-violet-500 font-medium">Administrator</p>
+            </div>
+        </div>
+
+        <!-- Logout -->
         <form action="<?= base_url('/auth/logout') ?>" method="POST">
             <?= csrf_field() ?>
             <button type="submit"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all group">
-                <span class="material-symbols-outlined text-xl">logout</span>
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:text-red-600 transition-all"
+                style="border: 1px solid #fecaca; background: #fff5f5;"
+                onmouseover="this.style.background='#fee2e2'"
+                onmouseout="this.style.background='#fff5f5'">
+                <span class="material-symbols-rounded text-xl">logout</span>
                 Logout
             </button>
         </form>
     </div>
 </aside>
-
-<!-- ===================== MAIN WRAPPER ===================== -->
-<div class="lg:ml-64 flex flex-col min-h-screen">
-
-    <!-- Top Bar -->
-    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-        <div class="flex items-center justify-between px-4 lg:px-6 h-16">
-            <!-- Mobile menu toggle -->
-            <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition">
-                <span class="material-symbols-outlined">menu</span>
-            </button>
-
-            <!-- Page title -->
-            <h2 class="font-semibold text-gray-800 text-lg"><?= esc($title ?? 'Dashboard') ?></h2>
-
-            <!-- Right actions -->
-            <div class="flex items-center gap-3">
-                <!-- Notifikasi -->
-                <button class="relative p-2 rounded-lg hover:bg-gray-100 transition">
-                    <span class="material-symbols-outlined text-gray-600">notifications</span>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
-                <!-- User dropdown -->
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                        <span class="text-white text-xs font-bold">
-                            <?= strtoupper(substr(session()->get('user_name') ?? 'A', 0, 1)) ?>
-                        </span>
-                    </div>
-                    <span class="hidden sm:block text-sm font-medium text-gray-700">
-                        <?= esc(session()->get('user_name') ?? 'Admin') ?>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Page Content -->
-    <main class="flex-1 p-4 lg:p-6">
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
-                <span class="material-symbols-outlined">check_circle</span>
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
-                <span class="material-symbols-outlined">error</span>
-                <?= session()->getFlashdata('error') ?>
-            </div>
-        <?php endif; ?>
-
-        <?= $this->renderSection('content') ?>
-    </main>
-
-    <!-- ===================== FOOTER ===================== -->
-    <?= $this->include('layouts/admin/footer') ?>
-</div>
-
-<script>
-    function toggleSidebar() {
-        const sidebar  = document.getElementById('admin-sidebar');
-        const overlay  = document.getElementById('sidebar-overlay');
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('show');
-    }
-
-    function closeSidebar() {
-        document.getElementById('admin-sidebar').classList.remove('open');
-        document.getElementById('sidebar-overlay').classList.remove('show');
-    }
-</script>
-</body>
-</html>

@@ -3,7 +3,8 @@
 
 <main class="max-w-4xl mx-auto px-6 py-10">
 
-  <!-- Flash errors -->
+  <!-- Flash errors — ditampilkan via Global Toast (lihat main.php), fallback jika JS mati -->
+  <noscript>
   <?php if(session()->getFlashdata('errors')): ?>
     <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
       <ul class="list-disc list-inside">
@@ -18,6 +19,7 @@
       <?= session()->getFlashdata('error') ?>
     </div>
   <?php endif; ?>
+  </noscript>
 
   <!-- Header -->
   <div class="mb-8">
@@ -57,7 +59,7 @@
         id="chapter_title"
         name="chapter_title"
         value="<?= old('chapter_title', isset($chapter['title']) ? $chapter['title'] : '') ?>"
-        placeholder="Judul chapter"
+          placeholder="Chapter title"
         class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus-border-accent outline-none transition-all text-sm"
         required
         maxlength="150"
@@ -68,22 +70,22 @@
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <div class="flex items-center justify-between mb-2">
         <label for="chapter_content" class="block text-sm font-bold text-primary">Chapter Content *</label>
-        <span id="word-count" class="text-xs text-slate-400 font-medium">0 kata</span>
+          <span id="word-count" class="text-xs text-slate-400 font-medium">0 words</span>
       </div>
       <textarea
         id="chapter_content"
         name="chapter_content"
         rows="22"
-        placeholder="Tulis konten chapter di sini..."
+          placeholder="Write chapter content here..."
         class="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all text-sm resize-none font-serif leading-relaxed"
         required
       ><?= old('chapter_content', isset($chapter['content']) ? $chapter['content'] : '') ?></textarea>
-      <p class="text-xs text-slate-400 mt-2">Minimum 500 kata disarankan</p>
+        <p class="text-xs text-slate-400 mt-2">Minimum 500 words recommended</p>
     </div>
 
     <!-- Settings -->
     <div class="bg-white border border-border rounded-2xl p-6 shadow-sm">
-      <h3 class="text-sm font-bold text-primary mb-4">Pengaturan Chapter</h3>
+        <h3 class="text-sm font-bold text-primary mb-4">Chapter Settings</h3>
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
@@ -93,7 +95,7 @@
           class="w-4 h-4 text-accent rounded focus:ring-2 focus:ring-accent/30"
         />
         <span class="text-sm text-slate-700 font-medium">Premium Chapter</span>
-        <span class="text-xs text-slate-400">(chapter berbayar / khusus member premium)</span>
+          <span class="text-xs text-slate-400">(paid chapter / for premium members only)</span>
       </label>
     </div>
 
@@ -106,13 +108,23 @@
       <button type="submit" name="save_draft" value="1"
         class="flex-1 px-6 py-3 bg-white border-2 border-accent text-accent rounded-lg font-semibold hover:bg-accent/5 transition-all inline-flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-base">draft</span>
-        Simpan Draft
+        Save Draft
       </button>
       <button type="submit"
         class="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-purple-700 transition-all inline-flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-base">publish</span>
-        <?= (isset($chapter['status']) && $chapter['status'] === 'PUBLISHED') ? 'Update & Publish' : 'Publish Chapter' ?>
+        <span class="material-symbols-outlined text-base">save</span>
+        Save Changes
       </button>
+    </div>
+
+    <!-- Info: publish chapter diatur dari halaman Edit Story -->
+    <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
+      <span class="material-symbols-outlined text-slate-400 text-lg flex-shrink-0 mt-0.5">info</span>
+      <p class="text-xs text-slate-500 leading-relaxed">
+          To publish a chapter, use the <strong class="text-slate-600">Publish for Review</strong> button on the
+          <a href="<?= site_url('story/edit/' . $story['id'] . '?tab=detail') ?>" class="text-accent font-semibold hover:underline">Edit Story</a> page.
+          All chapters will be reviewed together with the story.
+      </p>
     </div>
   </form>
 

@@ -20,7 +20,7 @@ $current_uri = uri_string();
         <!-- Logo & Nav -->
         <div class="flex items-center gap-10">
             <a class="flex items-center gap-2" href="<?= base_url('/') ?>">
-                <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu" class="h-24 object-contain"/>
+                <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu" class="h-12 object-contain"/>
             </a>
             
             <!-- Desktop Navigation -->

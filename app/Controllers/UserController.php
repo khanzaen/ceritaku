@@ -224,10 +224,10 @@ class UserController extends BaseController
                 session()->set('user_photo', $data['profile_photo']);
             }
 
-            return redirect()->to('/profile')->with('success', 'Profile berhasil diupdate');
+                return redirect()->to('/profile')->with('success', 'Profile updated successfully');
         }
 
-        return redirect()->back()->with('error', 'Gagal update profile')->withInput();
+            return redirect()->back()->with('error', 'Failed to update profile')->withInput();
     }
 
     /**

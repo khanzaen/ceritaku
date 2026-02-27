@@ -23,7 +23,7 @@ $current_uri = uri_string();
         <!-- Sidebar Header -->
         <div class="flex items-center justify-between p-6 border-b border-border dark:border-slate-700">
             <a href="<?= base_url('/') ?>" class="flex items-center gap-2">
-                <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu" class="h-8 object-contain"/>
+                <img src="<?= base_url('assets/images/logo.png') ?>" alt="CeritaKu" class="h-12 object-contain"/>
             </a>
             <button type="button" onclick="closeMobileSidebar()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                 <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">close</span>

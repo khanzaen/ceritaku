@@ -1,136 +1,52 @@
-<?= $this->extend('layouts/admin') ?>
-
+<?= $this->extend('layouts/admin_layout') ?>
 <?= $this->section('content') ?>
 
 <!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Total Users -->
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-600 mb-1">Total Users</p>
-                <h3 class="text-3xl font-bold text-gray-900"><?= number_format($total_users ?? 0) ?></h3>
-            </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-blue-600 text-2xl">group</span>
-            </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-indigo-600 text-2xl" title="Total Users">group</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Users</p>
+            <p class="text-2xl font-bold text-gray-800"><?= number_format($total_users ?? 0) ?></p>
         </div>
     </div>
-    
-    <!-- Total Stories -->
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-600 mb-1">Total Stories</p>
-                <h3 class="text-3xl font-bold text-gray-900"><?= number_format($total_stories ?? 0) ?></h3>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-purple-600 text-2xl">menu_book</span>
-            </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-purple-600 text-2xl" title="Total Stories">menu_book</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Stories</p>
+            <p class="text-2xl font-bold text-gray-800"><?= number_format($total_stories ?? 0) ?></p>
         </div>
     </div>
-    
-    <!-- Published Stories -->
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-600 mb-1">Published</p>
-                <h3 class="text-3xl font-bold text-green-600"><?= number_format($total_published ?? 0) ?></h3>
-            </div>
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-green-600 text-2xl">check_circle</span>
-            </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-green-600 text-2xl" title="Published">check_circle</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Published</p>
+            <p class="text-2xl font-bold text-gray-800"><?= number_format($total_published ?? 0) ?></p>
         </div>
     </div>
-    
-    <!-- Pending Review -->
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-600 mb-1">Pending Review</p>
-                <h3 class="text-3xl font-bold text-orange-600"><?= number_format($total_pending ?? 0) ?></h3>
-            </div>
-            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-orange-600 text-2xl">schedule</span>
-            </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-amber-600 text-2xl" title="Pending Review">pending</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Pending Review</p>
+            <p class="text-2xl font-bold text-gray-800"><?= number_format($total_pending ?? 0) ?></p>
         </div>
     </div>
+
 </div>
 
-<!-- Statistik & Grafik -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <!-- Grafik Pertumbuhan User & Cerita -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Pertumbuhan User & Cerita</h3>
-        <canvas id="growthChart" height="220"></canvas>
-    </div>
-    <!-- Grafik Aktivitas -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Aktivitas Mingguan</h3>
-        <canvas id="activityChart" height="220"></canvas>
-    </div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// Contoh data dummy, ganti dengan data dari backend jika perlu
-const growthData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-    datasets: [
-        {
-            label: 'User Baru',
-            data: [12, 19, 15, 22, 18, 25, 30, 28, 24, 20, 18, 22],
-            borderColor: '#6c5ce7',
-            backgroundColor: 'rgba(108,92,231,0.1)',
-            tension: 0.4,
-        },
-        {
-            label: 'Cerita Baru',
-            data: [8, 14, 10, 16, 12, 18, 22, 20, 17, 15, 13, 16],
-            borderColor: '#00b894',
-            backgroundColor: 'rgba(0,184,148,0.1)',
-            tension: 0.4,
-        }
-    ]
-};
-const growthChart = new Chart(document.getElementById('growthChart'), {
-    type: 'line',
-    data: growthData,
-    options: {
-        responsive: true,
-        plugins: { legend: { display: true } },
-        scales: { y: { beginAtZero: true } }
-    }
-});
-
-const activityData = {
-    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-    datasets: [
-        {
-            label: 'Views',
-            data: [120, 150, 180, 200, 170, 220, 210],
-            backgroundColor: '#6c5ce7',
-        },
-        {
-            label: 'Likes',
-            data: [30, 40, 35, 50, 45, 60, 55],
-            backgroundColor: '#00b894',
-        },
-        {
-            label: 'Comments',
-            data: [10, 15, 12, 18, 14, 20, 17],
-            backgroundColor: '#fdcb6e',
-        }
-    ]
-};
-const activityChart = new Chart(document.getElementById('activityChart'), {
-    type: 'bar',
-    data: activityData,
-    options: {
-        responsive: true,
-        plugins: { legend: { display: true } },
-        scales: { y: { beginAtZero: true } }
-    }
-});
-</script>
 
 <?= $this->endSection() ?>

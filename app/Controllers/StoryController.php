@@ -46,7 +46,7 @@ class StoryController extends BaseController
     {
         // Cek login
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login untuk membuat cerita');
+            return redirect()->to('/login')->with('error', 'Please log in to create a story');
         }
 
         $data = [
@@ -63,37 +63,41 @@ class StoryController extends BaseController
     {
         // Cek login
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
+            return redirect()->to('/login')->with('error', 'Please log in first');
         }
 
         // Validasi input
+        // Catatan: publication_status TIDAK divalidasi di sini karena hanya relevan
+        // setelah cerita diterbitkan (PUBLISHED). Saat create, nilainya di-default ke 'Ongoing'.
         $rules = [
             'title' => [
                 'rules' => 'required|min_length[3]|max_length[150]',
                 'errors' => [
-                    'required' => 'Judul cerita harus diisi',
-                    'min_length' => 'Judul minimal 3 karakter',
-                    'max_length' => 'Judul maksimal 150 karakter'
+                    'required'    => 'Judul cerita harus diisi',
+                    'min_length'  => 'Judul minimal 3 karakter',
+                    'max_length'  => 'Judul maksimal 150 karakter',
                 ]
             ],
             'synopsis' => [
                 'rules' => 'required|min_length[10]',
                 'errors' => [
-                    'required' => 'Deskripsi cerita harus diisi',
-                    'min_length' => 'Deskripsi minimal 10 karakter'
+                    'required'   => 'Deskripsi cerita harus diisi',
+                    'min_length' => 'Deskripsi minimal 10 karakter',
                 ]
             ],
             'genre' => [
                 'rules' => 'required',
                 'errors' => [
-                    'required' => 'Pilih minimal 1 genre'
+                    'required' => 'Pilih minimal 1 genre',
                 ]
             ],
+            // status hanya boleh DRAFT atau PENDING_REVIEW saat user membuat cerita.
+            // PUBLISHED dan ARCHIVED hanya bisa di-set oleh admin.
             'status' => [
-                'rules' => 'required|in_list[ongoing,completed,hiatus]',
+                'rules' => 'required|in_list[DRAFT,PENDING_REVIEW]',
                 'errors' => [
-                    'required' => 'Pilih status cerita',
-                    'in_list' => 'Status tidak valid'
+                    'required' => 'Pilih aksi simpan cerita',
+                    'in_list'  => 'Aksi tidak valid. Pilih "Simpan Draft" atau "Kirim untuk Review"',
                 ]
             ],
             'cover' => [
@@ -118,12 +122,12 @@ class StoryController extends BaseController
 
         if ($cover && $cover->isValid() && !$cover->hasMoved()) {
             if ($cover->getSize() > 5 * 1024 * 1024) {
-                return redirect()->back()->withInput()->with('error', 'Ukuran file maksimal 5MB');
+                return redirect()->back()->withInput()->with('error', 'File size must not exceed 5MB');
             }
 
             $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
             if (!in_array($cover->getMimeType(), $allowedTypes)) {
-                return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
+                return redirect()->back()->withInput()->with('error', 'File format must be JPG or PNG');
             }
 
             // Pastikan folder tujuan ada
@@ -146,17 +150,18 @@ class StoryController extends BaseController
         $genres = $this->request->getPost('genre');
         $genresString = implode(', ', array_map('ucfirst', $genres));
 
-        // Mapping publication_status dari form
-        $publicationStatus = $this->request->getPost('status');
-        $publicationStatusMap = [
-            'ongoing' => 'Ongoing',
-            'completed' => 'Completed',
-            'hiatus' => 'On Hiatus'
-        ];
+        // ── STATUS (field sistem) ─────────────────────────────────────────────
+        // Diambil dari hidden input <input name="status"> yang di-set via JS
+        // berdasarkan tombol yang diklik: "DRAFT" atau "PENDING_REVIEW".
+        // Sudah divalidasi in_list[DRAFT,PENDING_REVIEW] di atas.
+        $systemStatus = $this->request->getPost('status'); // 'DRAFT' | 'PENDING_REVIEW'
+        $isDraft = ($systemStatus === 'DRAFT');
 
-        // Status sistem - bisa DRAFT atau PUBLISHED
-        $isDraft = $this->request->getPost('save_draft') ? true : false;
-        $systemStatus = $isDraft ? 'DRAFT' : 'PUBLISHED';
+        // ── PUBLICATION STATUS (field konten) ────────────────────────────────
+        // publication_status (Ongoing/Completed/On Hiatus) hanya bermakna setelah
+        // cerita berstatus PUBLISHED. Saat create, selalu di-default ke 'Ongoing'.
+        // Penulis dapat mengubahnya lewat halaman edit setelah cerita diterbitkan.
+        $publicationStatus = 'Ongoing';
 
         // Data story
         $storyData = [
@@ -165,8 +170,8 @@ class StoryController extends BaseController
             'description'        => $this->request->getPost('synopsis'),
             'cover_image'        => $coverPath,
             'genres'             => $genresString,
-            'status'             => $systemStatus,
-            'publication_status' => $publicationStatusMap[$publicationStatus] ?? 'Ongoing',
+            'status'             => $systemStatus,      // DRAFT | PENDING_REVIEW
+            'publication_status' => $publicationStatus, // selalu 'Ongoing' saat create
         ];
 
         // Gunakan transaksi database
@@ -212,7 +217,7 @@ class StoryController extends BaseController
                 ];
 
                 if (!$this->chapterModel->insert($chapterData)) {
-                    throw new \Exception('Gagal menyimpan chapter ' . ($index + 1));
+                    throw new \Exception('Failed to save chapter ' . ($index + 1));
                 }
             }
 
@@ -229,11 +234,11 @@ class StoryController extends BaseController
                 }
             }
 
-            // Pesan sukses
+            // Pesan sukses sesuai status yang dipilih
             if ($isDraft) {
-                return redirect()->to('/my-stories')->with('success', 'Cerita berhasil disimpan sebagai draft');
+                return redirect()->to('/my-stories')->with('success', 'Story saved as draft. You can edit it anytime.');
             } else {
-                return redirect()->to('/my-stories')->with('success', 'Cerita berhasil dipublikasikan!');
+                return redirect()->to('/my-stories')->with('success', 'Story submitted for review. Admin will check and publish it shortly.');
             }
 
         } catch (\Exception $e) {
@@ -244,7 +249,7 @@ class StoryController extends BaseController
             }
 
             log_message('error', 'Error saving story: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan cerita: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Failed to save story: ' . $e->getMessage());
         }
     }
 
@@ -264,7 +269,7 @@ class StoryController extends BaseController
         }
 
         if ($story['author_id'] != session()->get('user_id')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke cerita ini');
+            return redirect()->back()->with('error', 'You do not have access to this story');
         }
 
         $story['genres_array'] = array_map('trim', explode(',', $story['genres']));
@@ -302,16 +307,25 @@ class StoryController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Story not found');
         }
 
+        // Pastikan hanya pemilik yang bisa edit (status diatur admin via panel terpisah)
         if ($story['author_id'] != session()->get('user_id')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke cerita ini');
+            return redirect()->back()->with('error', 'You do not have access to this story');
         }
 
+        // ── VALIDASI ──────────────────────────────────────────────────────────
+        // Catatan: field `status` TIDAK ada di form edit penulis — status cerita
+        // diatur oleh admin. Penulis hanya mengubah konten + publication_status
+        // (dan publication_status hanya ditampilkan jika cerita sudah PUBLISHED).
         $rules = [
-            'title'              => 'required|min_length[3]|max_length[150]',
-            'synopsis'           => 'required|min_length[10]',
-            'genre'              => 'required',
-            'publication_status' => 'required|in_list[Ongoing,Completed,On Hiatus]',
-            'cover'              => [
+            'title'    => 'required|min_length[3]|max_length[150]',
+            'synopsis' => 'required|min_length[10]',
+            'genre'    => 'required',
+            // publication_status hanya wajib jika cerita sudah PUBLISHED
+            'publication_status' => [
+                'rules'  => 'if_exist|in_list[Ongoing,Completed,On Hiatus]',
+                'errors' => ['in_list' => 'Status publikasi tidak valid'],
+            ],
+            'cover' => [
                 'rules'  => 'if_exist|max_size[cover,5120]|is_image[cover]|mime_in[cover,image/jpg,image/jpeg,image/png]',
                 'errors' => [
                     'max_size' => 'Ukuran cover maksimal 5MB',
@@ -325,25 +339,36 @@ class StoryController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $genres      = $this->request->getPost('genre');
+        $genres       = $this->request->getPost('genre');
         $genresString = implode(', ', array_map('ucfirst', $genres));
 
         $updateData = [
-            'title'              => $this->request->getPost('title'),
-            'description'        => $this->request->getPost('synopsis'),
-            'genres'             => $genresString,
-            'publication_status' => $this->request->getPost('publication_status'),
+            'title'       => $this->request->getPost('title'),
+            'description' => $this->request->getPost('synopsis'),
+            'genres'      => $genresString,
+            // status TIDAK diubah oleh penulis — hanya admin yang bisa mengubahnya
         ];
+
+        // ── PUBLICATION STATUS ────────────────────────────────────────────────
+        // Hanya proses publication_status jika cerita sudah PUBLISHED.
+        // Jika masih DRAFT/PENDING_REVIEW, field ini diabaikan meski dikirim.
+        if ($story['status'] === 'PUBLISHED') {
+            $pubStatus = $this->request->getPost('publication_status');
+            $allowedPubStatus = ['Ongoing', 'Completed', 'On Hiatus'];
+            if ($pubStatus && in_array($pubStatus, $allowedPubStatus)) {
+                $updateData['publication_status'] = $pubStatus;
+            }
+        }
 
         $cover = $this->request->getFile('cover');
         if ($cover && $cover->isValid() && !$cover->hasMoved()) {
             if ($cover->getSize() > 5 * 1024 * 1024) {
-                return redirect()->back()->withInput()->with('error', 'Ukuran file maksimal 5MB');
+                return redirect()->back()->withInput()->with('error', 'File size must not exceed 5MB');
             }
 
             $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
             if (!in_array($cover->getMimeType(), $allowedTypes)) {
-                return redirect()->back()->withInput()->with('error', 'Format file harus JPG atau PNG');
+                return redirect()->back()->withInput()->with('error', 'File format must be JPG or PNG');
             }
 
             if ($story['cover_image'] && file_exists(FCPATH . 'uploads/' . $story['cover_image'])) {
@@ -362,10 +387,57 @@ class StoryController extends BaseController
 
         if ($this->storyModel->update($id, $updateData)) {
             // Balik ke tab detail setelah update
-            return redirect()->to('/story/edit/' . $id . '?tab=detail')->with('success', 'Detail cerita berhasil diperbarui');
+            return redirect()->to('/story/edit/' . $id . '?tab=detail')->with('success', 'Story details updated successfully');
         }
 
-        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui cerita');
+        return redirect()->back()->withInput()->with('error', 'Failed to update story');
+    }
+
+    /**
+     * Submit story for review (DRAFT → PENDING_REVIEW)
+     * atau re-submit jika sudah PUBLISHED (tetap PENDING_REVIEW untuk re-review)
+     */
+    public function submitForReview($id)
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $story = $this->storyModel->find($id);
+
+        if (!$story) {
+            return redirect()->to('/my-stories')->with('error', 'Story not found');
+        }
+
+        if ($story['author_id'] != session()->get('user_id')) {
+            return redirect()->to('/my-stories')->with('error', 'You do not have access to this story');
+        }
+
+        // Hanya boleh submit jika DRAFT, PENDING_REVIEW, atau PUBLISHED (re-submit update)
+        $allowedStatuses = ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED'];
+        if (!in_array($story['status'], $allowedStatuses)) {
+            return redirect()->back()->with('error', 'Story cannot be submitted for review at this time');
+        }
+
+        $isResubmit = in_array($story['status'], ['PENDING_REVIEW', 'PUBLISHED']);
+
+        // Update status story ke PENDING_REVIEW
+        $this->storyModel->update($id, ['status' => 'PENDING_REVIEW']);
+
+        // Semua chapter (DRAFT / PUBLISHED) ikut di-set PENDING_REVIEW
+        // Chapter yang sudah PUBLISHED tidak perlu di-review ulang secara terpisah —
+        // admin meninjau story sebagai satu kesatuan.
+        $this->chapterModel
+            ->whereIn('status', ['DRAFT', 'PUBLISHED'])
+            ->where('story_id', $id)
+            ->set(['status' => 'PENDING_REVIEW'])
+            ->update();
+
+        $msg = $isResubmit
+            ? 'Story & all chapters resubmitted for review. Admin will check your updates.'
+            : 'Story & all chapters submitted for review. Admin will check and publish them shortly.';
+
+        return redirect()->to('/story/edit/' . $id . '?tab=detail')->with('review', $msg);
     }
 
     /**
@@ -392,10 +464,13 @@ class StoryController extends BaseController
         ];
 
         foreach ($allStories as &$story) {
-            $story['publication_badge'] = $pubStatusBadge[$story['publication_status']] ?? ['color' => 'gray', 'text' => $story['publication_status']];
+            // publication_badge hanya relevan untuk cerita PUBLISHED
+            // Untuk cerita non-published, set badge kosong agar view tidak error
             if ($story['status'] === 'PUBLISHED') {
+                $story['publication_badge'] = $pubStatusBadge[$story['publication_status']] ?? ['color' => 'gray', 'text' => $story['publication_status']];
                 $published[] = $story;
             } else {
+                $story['publication_badge'] = ['color' => 'gray', 'text' => ''];
                 $drafts[] = $story;
             }
         }
@@ -511,7 +586,7 @@ class StoryController extends BaseController
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['success' => false, 'message' => 'Please login first']);
             }
-            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
+            return redirect()->to('/login')->with('error', 'Please log in first');
         }
 
         $userId = session()->get('user_id');
@@ -520,13 +595,13 @@ class StoryController extends BaseController
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['success' => true, 'message' => 'Story added to library']);
             }
-            return redirect()->back()->with('success', 'Cerita berhasil ditambahkan ke library');
+            return redirect()->back()->with('success', 'Story added to library');
         }
 
         if ($this->request->isAJAX()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Story already in your library']);
         }
-        return redirect()->back()->with('error', 'Cerita sudah ada di library Anda');
+        return redirect()->back()->with('error', 'Story is already in your library');
     }
 
     /**
@@ -547,13 +622,13 @@ class StoryController extends BaseController
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['success' => true, 'message' => 'Story removed from library']);
             }
-            return redirect()->back()->with('success', 'Cerita dihapus dari library');
+            return redirect()->back()->with('success', 'Story removed from library');
         }
 
         if ($this->request->isAJAX()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Failed to remove story from library']);
         }
-        return redirect()->back()->with('error', 'Gagal menghapus cerita dari library');
+        return redirect()->back()->with('error', 'Failed to delete story dari library');
     }
 
     /**
@@ -583,12 +658,12 @@ class StoryController extends BaseController
         $story = $this->storyModel->find($id);
 
         if (!$story) {
-            return redirect()->to('/my-stories')->with('error', 'Cerita tidak ditemukan');
+            return redirect()->to('/my-stories')->with('error', 'Story not found');
         }
 
         // Pastikan hanya pemilik yang bisa hapus
         if ($story['author_id'] != session()->get('user_id')) {
-            return redirect()->to('/my-stories')->with('error', 'Anda tidak memiliki akses untuk menghapus cerita ini');
+            return redirect()->to('/my-stories')->with('error', 'You do not have permission to delete this story');
         }
 
         // Hapus file cover jika ada
@@ -601,10 +676,10 @@ class StoryController extends BaseController
 
         // Hapus story
         if ($this->storyModel->delete($id)) {
-            return redirect()->to('/my-stories')->with('success', 'Cerita berhasil dihapus');
+            return redirect()->to('/my-stories')->with('success', 'Story deleted successfully');
         }
 
-        return redirect()->to('/my-stories')->with('error', 'Gagal menghapus cerita');
+        return redirect()->to('/my-stories')->with('error', 'Failed to delete story');
     }
     /**
      * Halaman semua cerita

@@ -590,7 +590,7 @@ function showSlide(index) {
 function nextSlide() { showSlide((currentSlide + 1) % totalSlides); resetAutoSlide(); }
 function prevSlide() { showSlide((currentSlide - 1 + totalSlides) % totalSlides); resetAutoSlide(); }
 function goToSlide(i) { showSlide(i); resetAutoSlide(); }
-function startAutoSlide() { autoSlideInterval = setInterval(nextSlide, 1000); }
+function startAutoSlide() { autoSlideInterval = setInterval(nextSlide, 2000); }
 function resetAutoSlide() { clearInterval(autoSlideInterval); startAutoSlide(); }
 
 showSlide(0);

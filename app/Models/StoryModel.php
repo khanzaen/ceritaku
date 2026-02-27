@@ -53,7 +53,7 @@ class StoryModel extends Model
         'genres'      => 'required|max_length[255]',
         'description' => 'permit_empty',
         'cover_image' => 'permit_empty|max_length[255]',
-        'status'      => 'in_list[DRAFT,PUBLISHED,ARCHIVED]',
+        'status'      => 'in_list[DRAFT,PENDING_REVIEW,PUBLISHED,ARCHIVED]',
         'publication_status' => 'in_list[Ongoing,Completed,On Hiatus]'
     ];
     protected $validationMessages   = [];

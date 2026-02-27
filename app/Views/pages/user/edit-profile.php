@@ -35,7 +35,7 @@
         <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-6 text-sm">
             <p class="font-semibold mb-1 flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">error</span>
-                Perbaiki kesalahan berikut:
+                Please fix the following errors:
             </p>
             <ul class="list-disc list-inside space-y-0.5 pl-1">
                 <?php foreach (session()->getFlashdata('errors') as $error): ?>
@@ -50,7 +50,7 @@
 
         <!-- Profile Photo -->
         <div class="bg-white border border-slate-100 rounded-2xl p-6 mb-5 shadow-sm">
-            <h2 class="text-sm font-bold text-slate-700 mb-4">Foto Profil</h2>
+            <h2 class="text-sm font-bold text-slate-700 mb-4">Profile Photo</h2>
 
             <div class="flex items-center gap-5">
                 <!-- Preview -->
@@ -79,29 +79,29 @@
                     <label for="profile_photo"
                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer transition-all">
                         <span class="material-symbols-outlined text-base">upload</span>
-                        Ganti Foto
+                        Change Photo
                     </label>
                     <input type="file" id="profile_photo" name="profile_photo"
                            accept="image/jpeg,image/png,image/jpg"
                            class="hidden" onchange="previewPhoto(this)" />
-                    <p class="text-xs text-slate-400 mt-2">JPG atau PNG, maks. 2MB</p>
+                    <p class="text-xs text-slate-400 mt-2">JPG or PNG, max 2MB</p>
                 </div>
             </div>
         </div>
 
         <!-- Personal Info -->
         <div class="bg-white border border-slate-100 rounded-2xl p-6 mb-5 shadow-sm">
-            <h2 class="text-sm font-bold text-slate-700 mb-4">Informasi Pribadi</h2>
+            <h2 class="text-sm font-bold text-slate-700 mb-4">Personal Information</h2>
 
             <div class="space-y-4">
                 <!-- Name -->
                 <div>
                     <label for="name" class="block text-sm font-semibold text-slate-700 mb-1.5">
-                        Nama <span class="text-red-400">*</span>
+                        Name <span class="text-red-400">*</span>
                     </label>
                     <input type="text" id="name" name="name"
                            value="<?= esc(old('name', $user['name'])) ?>"
-                           placeholder="Nama lengkap kamu"
+                           placeholder="Your full name"
                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all" />
                 </div>
 
@@ -117,7 +117,7 @@
                                placeholder="username"
                                class="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all" />
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">Hanya huruf, angka, tanpa spasi</p>
+                    <p class="text-xs text-slate-400 mt-1">Letters and numbers only, no spaces</p>
                 </div>
 
                 <!-- Bio -->
@@ -127,7 +127,7 @@
                     </label>
                     <textarea id="bio" name="bio" rows="4"
                               maxlength="500"
-                              placeholder="Ceritakan sedikit tentang dirimu..."
+                              placeholder="Tell us a little about yourself..."
                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
                               oninput="updateCharCount(this)"><?= esc(old('bio', $user['bio'] ?? '')) ?></textarea>
                     <div class="flex justify-end mt-1">
@@ -143,12 +143,12 @@
         <div class="flex items-center justify-between gap-3">
             <a href="<?= base_url('/profile') ?>"
                class="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">
-                Batal
+                Cancel
             </a>
             <button type="submit"
                     class="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-purple-700 transition-all shadow-md shadow-purple-200 flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">save</span>
-                Simpan Perubahan
+                Save Changes
             </button>
         </div>
 
@@ -160,7 +160,7 @@ function previewPhoto(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
         if (file.size > 2 * 1024 * 1024) {
-            alert('Ukuran file maksimal 2MB');
+            alert('File size must not exceed 2MB');
             input.value = '';
             return;
         }

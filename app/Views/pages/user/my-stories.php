@@ -68,7 +68,17 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <?php foreach($allStories as $story): ?>
-                <?php $isDraft = $story['status'] !== 'PUBLISHED'; ?>
+                <?php
+                $status = $story['status'] ?? 'DRAFT';
+                $isDraft = $status === 'DRAFT';
+                $statusBadge = [
+                    'DRAFT' => ['label' => 'Draft', 'bg' => 'bg-gray-100', 'text' => 'text-gray-500'],
+                    'PENDING_REVIEW' => ['label' => 'Pending Review', 'bg' => 'bg-amber-100', 'text' => 'text-amber-700'],
+                    'PUBLISHED' => ['label' => 'Published', 'bg' => 'bg-green-100', 'text' => 'text-green-700'],
+                    'ARCHIVED' => ['label' => 'Archived', 'bg' => 'bg-red-100', 'text' => 'text-red-600'],
+                ];
+                $badge = $statusBadge[$status] ?? $statusBadge['DRAFT'];
+                ?>
 
                 <div class="story-card bg-white rounded-2xl border border-border overflow-hidden flex flex-col <?= $isDraft ? 'opacity-80' : '' ?>">
 
@@ -97,11 +107,18 @@
                     <!-- Content -->
                     <div class="p-4 flex flex-col flex-1">
 
-                        <!-- Badge publication status -->
+                        <!-- Badge: status sistem + publication_status (hanya jika PUBLISHED) -->
                         <div class="flex flex-wrap gap-1.5 mb-2">
+                            <!-- System status badge (selalu tampil) -->
+                            <span class="px-2 py-0.5 <?= $badge['bg'] ?> <?= $badge['text'] ?> rounded-full text-[10px] font-semibold">
+                                <?= $badge['label'] ?>
+                            </span>
+                            <!-- Publication status badge: hanya tampil jika cerita sudah PUBLISHED -->
+                            <?php if ($story['status'] === 'PUBLISHED'): ?>
                             <span class="px-2 py-0.5 bg-<?= $story['publication_badge']['color'] ?>-100 text-<?= $story['publication_badge']['color'] ?>-700 rounded-full text-[10px] font-semibold">
                                 <?= $story['publication_badge']['text'] ?>
                             </span>
+                            <?php endif; ?>
                         </div>
 
                         <h3 class="font-bold text-primary text-sm mb-1 line-clamp-1"><?= esc($story['title']) ?></h3>

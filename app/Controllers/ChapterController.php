@@ -34,7 +34,7 @@ class ChapterController extends BaseController
         }
 
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login untuk membaca chapter');
+            return redirect()->to('/login')->with('error', 'Please log in to read this chapter');
         }
 
         $userId = session()->get('user_id');
@@ -73,7 +73,7 @@ class ChapterController extends BaseController
         }
 
         if ($story['author_id'] != session()->get('user_id')) {
-            return redirect()->to('/my-stories')->with('error', 'Anda tidak memiliki akses ke cerita ini');
+            return redirect()->to('/my-stories')->with('error', 'You do not have access to this story');
         }
 
         // Hitung chapter berikutnya
@@ -102,7 +102,7 @@ class ChapterController extends BaseController
         $story = $this->storyModel->find($storyId);
 
         if (!$story || $story['author_id'] != session()->get('user_id')) {
-            return redirect()->to('/my-stories')->with('error', 'Akses ditolak');
+            return redirect()->to('/my-stories')->with('error', 'Access denied');
         }
 
         $rules = [
@@ -127,11 +127,11 @@ class ChapterController extends BaseController
         ];
 
         if ($this->chapterModel->insert($chapterData)) {
-            $msg = $isDraft ? 'Chapter berhasil disimpan sebagai draft' : 'Chapter berhasil dipublikasikan';
+            $msg = $isDraft ? 'Chapter saved as draft' : 'Chapter published successfully';
             return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', $msg);
         }
 
-        return redirect()->back()->withInput()->with('error', 'Gagal menyimpan chapter');
+        return redirect()->back()->withInput()->with('error', 'Failed to save chapter');
     }
 
     /**
@@ -151,11 +151,11 @@ class ChapterController extends BaseController
         }
 
         if ($story['author_id'] != session()->get('user_id')) {
-            return redirect()->to('/my-stories')->with('error', 'Anda tidak memiliki akses ke cerita ini');
+            return redirect()->to('/my-stories')->with('error', 'You do not have access to this story');
         }
 
         if ($chapter['story_id'] != $storyId) {
-            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('error', 'Chapter tidak ditemukan');
+            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('error', 'Chapter not found');
         }
 
         $data = [
@@ -181,7 +181,7 @@ class ChapterController extends BaseController
         $chapter = $this->chapterModel->find($chapterId);
 
         if (!$story || !$chapter || $story['author_id'] != session()->get('user_id') || $chapter['story_id'] != $storyId) {
-            return redirect()->to('/my-stories')->with('error', 'Akses ditolak');
+            return redirect()->to('/my-stories')->with('error', 'Access denied');
         }
 
         $rules = [
@@ -203,11 +203,11 @@ class ChapterController extends BaseController
         ];
 
         if ($this->chapterModel->update($chapterId, $updateData)) {
-            $msg = $isDraft ? 'Chapter disimpan sebagai draft' : 'Chapter berhasil diperbarui';
+            $msg = $isDraft ? 'Chapter saved as draft' : 'Chapter updated successfully';
             return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', $msg);
         }
 
-        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui chapter');
+        return redirect()->back()->withInput()->with('error', 'Failed to update chapter');
     }
 
     /**
@@ -223,16 +223,16 @@ class ChapterController extends BaseController
         $chapter = $this->chapterModel->find($chapterId);
 
         if (!$story || !$chapter || $story['author_id'] != session()->get('user_id') || $chapter['story_id'] != $storyId) {
-            return redirect()->to('/my-stories')->with('error', 'Akses ditolak');
+            return redirect()->to('/my-stories')->with('error', 'Access denied');
         }
 
         if ($this->chapterModel->delete($chapterId)) {
             // Reorder chapter numbers
             $this->reorderChapters($storyId);
-            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', 'Chapter berhasil dihapus');
+            return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('success', 'Chapter deleted successfully');
         }
 
-        return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('error', 'Gagal menghapus chapter');
+        return redirect()->to('/story/edit/' . $storyId . '?tab=chapters')->with('error', 'Failed to delete chapter');
     }
 
     /**
@@ -256,7 +256,7 @@ class ChapterController extends BaseController
     public function addComment($id)
     {
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login untuk berkomentar');
+            return redirect()->to('/login')->with('error', 'Please log in to leave a comment');
         }
 
         $data = [
@@ -266,9 +266,9 @@ class ChapterController extends BaseController
         ];
 
         if ($this->commentModel->insert($data)) {
-            return redirect()->back()->with('success', 'Komentar berhasil ditambahkan');
+            return redirect()->back()->with('success', 'Comment added successfully');
         }
 
-        return redirect()->back()->with('error', 'Gagal menambahkan komentar');
+        return redirect()->back()->with('error', 'Failed to add comment');
     }
 }
