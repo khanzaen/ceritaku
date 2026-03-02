@@ -3,28 +3,7 @@
 
 <main class="max-w-4xl mx-auto px-6 py-10">
 
-  <!-- Flash messages — ditampilkan via Global Toast (lihat main.php), blok ini sebagai fallback jika JS mati -->
-  <noscript>
-  <?php if(session()->getFlashdata('error')): ?>
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-      <?= session()->getFlashdata('error') ?>
-    </div>
-  <?php endif; ?>
-  <?php if(session()->getFlashdata('success') || session()->getFlashdata('review')): ?>
-    <div class="mb-4 p-4 bg-green-100 border border-green-500 text-green-700 rounded-lg">
-      <?= session()->getFlashdata('success') ?? session()->getFlashdata('review') ?>
-    </div>
-  <?php endif; ?>
-  <?php if(session()->getFlashdata('errors')): ?>
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-      <ul class="list-disc list-inside">
-        <?php foreach(session()->getFlashdata('errors') as $error): ?>
-          <li><?= $error ?></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-  <?php endif; ?>
-  </noscript>
+  <!-- Flash messages removed: notification hanya muncul sebagai popup toast dari kanan -->
 
   <!-- Header -->
   <div class="mb-6">
@@ -224,12 +203,7 @@ $oldGenres = array_map('strtolower', old('genre', $story['genres_array']));
         </button>
 
       <?php elseif ($story['status'] === 'PUBLISHED'): ?>
-        <button type="button" onclick="openPublishModal('update')"
-          class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all inline-flex items-center justify-center gap-2">
-          <span class="material-symbols-outlined text-base">update</span>
-          Update for Review
-        </button>
-        <p class="text-xs text-slate-400 mt-2 text-center">Changes will be reviewed by admin before being displayed publicly.</p>
+        <p class="text-xs text-slate-400 mt-2 text-center">The story has been published by the admin and you can edit the story details and story chapters to publish it directly.</p>
       <?php endif; ?>
 
     </div>

@@ -191,8 +191,17 @@ $current_uri = uri_string();
         }
     }
 
-    // Confirm logout
+    // Confirm logout — POST ke auth/logout agar session benar-benar di-destroy
     function confirmLogout() {
-        window.location.href = '<?= base_url('/auth/logout') ?>';
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '<?= base_url("/logout") ?>';
+        const csrf = document.createElement('input');
+        csrf.type  = 'hidden';
+        csrf.name  = '<?= csrf_token() ?>';
+        csrf.value = '<?= csrf_hash() ?>';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
     }
 </script>

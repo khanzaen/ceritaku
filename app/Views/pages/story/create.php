@@ -120,11 +120,11 @@
     <div class="flex flex-col sm:flex-row gap-3 pt-4">
       <button type="submit" id="save-draft-btn" class="flex-1 px-6 py-3 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all inline-flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-base">save</span>
-        Simpan sebagai Draft
+        Save as Draft
       </button>
       <button type="submit" id="submit-review-btn" class="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-purple-700 transition-all inline-flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-base">send</span>
-        Kirim untuk Review
+        Submit for Review
       </button>
     </div>
     <p class="text-xs text-slate-500 text-center">By creating a story, you agree to our <a href="#" class="text-accent hover:underline">Terms of Service</a> and <a href="#" class="text-accent hover:underline">Content Guidelines</a>.</p>

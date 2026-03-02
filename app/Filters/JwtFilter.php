@@ -47,7 +47,6 @@ class JwtFilter implements FilterInterface
         }
 
         // Simpan payload ke header agar bisa diakses controller
-        // Cara alternatif: simpan ke $_SERVER atau session CI4
         $request->setGlobal('server', ['JWT_PAYLOAD' => json_encode($payload)]);
     }
 

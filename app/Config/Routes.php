@@ -14,17 +14,50 @@ $routes->get('files/(:segment)/(:any)', 'FileController::serve/$1/$2');
 
 // Authentication (Shield)
 $routes->group('auth', function ($routes) {
-    $routes->post('login', 'AuthController::login');
+    $routes->post('login',    'AuthController::login');
     $routes->post('register', 'AuthController::register');
-    $routes->get('logout', 'AuthController::logout');
+    $routes->get('logout',    'AuthController::logout');
+    $routes->post('logout',   'AuthController::logout');
 });
-// API Authenticatin
+
+$routes->get('auth/google', 'AuthController::googleRedirect');
+$routes->get('auth/google-callback', 'AuthController::googleCallback');
+
+$routes->post('admin/logout', 'AuthController::logout');
+
+// API 
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
+
+    // ── AUTH (Public)
     $routes->post('auth/register', 'AuthController::register');
-    $routes->post('auth/login', 'AuthController::login');
-    $routes->post('auth/logout', 'AuthController::logout', ['filter' => 'jwt']);
-    $routes->get('auth/me', 'AuthController::me', ['filter' => 'jwt']);
+    $routes->post('auth/login',    'AuthController::login');
+
+    // ── AUTH (Protected - butuh JWT) 
+    $routes->post('auth/logout',  'AuthController::logout',  ['filter' => 'jwt']);
+    $routes->get('auth/me',       'AuthController::me',      ['filter' => 'jwt']);
     $routes->post('auth/refresh', 'AuthController::refresh', ['filter' => 'jwt']);
+
+    // ── STORIES (Public) 
+    $routes->get('stories',        'StoryController::index');       
+    $routes->get('stories/(:num)', 'StoryController::show/$1');      
+
+    // ── STORIES (Protected - butuh JWT) 
+    $routes->get('my-stories',                         'StoryController::myStories',          ['filter' => 'jwt']); 
+    $routes->post('stories',                           'StoryController::create',             ['filter' => 'jwt']); 
+    $routes->post('stories/(:num)/update',             'StoryController::update/$1',          ['filter' => 'jwt']); 
+    $routes->post('stories/(:num)/delete',             'StoryController::delete/$1',          ['filter' => 'jwt']); 
+    $routes->post('stories/(:num)/submit',             'StoryController::submitForReview/$1', ['filter' => 'jwt']); 
+    $routes->post('stories/(:num)/bookmark',           'StoryController::addToLibrary/$1',    ['filter' => 'jwt']); 
+    $routes->post('stories/(:num)/bookmark/remove',    'StoryController::removeFromLibrary/$1', ['filter' => 'jwt']); 
+
+    // ── USER / PROFILE (Public) 
+    $routes->get('users/(:num)', 'UserController::show/$1');         
+
+    // ── USER / PROFILE (Protected - butuh JWT) 
+    $routes->get('profile',          'UserController::profile',       ['filter' => 'jwt']); 
+    $routes->post('profile/update',  'UserController::updateProfile', ['filter' => 'jwt']); 
+    $routes->get('library',          'UserController::library',       ['filter' => 'jwt']); 
+    $routes->get('my-reviews',       'UserController::myReviews',     ['filter' => 'jwt']); 
 });
 
 // Stories - Rute
@@ -42,7 +75,6 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('/story/(:num)/chapter/(:num)/update', 'ChapterController::update/$1/$2');
     $routes->post('/story/(:num)/chapter/(:num)/delete', 'ChapterController::deleteChapter/$1/$2');
     $routes->post('/story/(:num)/submit-review', 'StoryController::submitForReview/$1');
-
     $routes->post('/story/(:num)/review', 'ReviewController::submit/$1');
     $routes->get('/my-reviews', 'ReviewController::myReviews');
     $routes->post('/review/(:num)/update', 'ReviewController::update/$1');
@@ -56,6 +88,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('/chapter/(:num)', 'ChapterController::read/$1');
     $routes->get('/read-chapter/(:num)', 'ChapterController::read/$1');
     $routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
+
+    // Report Story
+    $routes->get('/report-story/(:num)', 'ReportStoryController::index/$1');
+    $routes->post('/report-story/submit', 'ReportStoryController::submit');
 });
 $routes->get('/discover', 'StoryController::discover');
 $routes->get('/discover/all', 'StoryController::allStories');
@@ -75,12 +111,7 @@ $routes->get('/my-comments', 'UserController::comments');
 $routes->get('/profile/edit', 'UserController::editProfile');
 $routes->post('/profile/update', 'UserController::updateProfile');
 
-// Report Story
-$routes->get('/report-story/(:num)', 'ReportStoryController::index/$1');
-$routes->post('/report-story/submit', 'ReportStoryController::submit');
 
-// Admin Logout (outside group, no auth filter needed after session destroy)
-$routes->post('admin/logout', 'AuthController::logout');
 
 // Admin Routes
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
@@ -149,6 +180,3 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->delete('comments/delete/(:num)', 'Admin\CommentManagementController::delete/$1');
 
 });
-
-$routes->get('auth/google', 'AuthController::googleRedirect');
-$routes->get('auth/google-callback', 'AuthController::googleCallback');

@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
+
+use App\Controllers\BaseController;
 
 use App\Models\UserModel;
 
@@ -29,7 +31,6 @@ class AuthController extends BaseController
                 ->setJSON(['message' => 'Email and password are required']);
         }
 
-
         // Check if email exists
         $userByEmail = $this->userModel->where('email', $email)->first();
         if (!$userByEmail) {
@@ -46,13 +47,21 @@ class AuthController extends BaseController
 
         $role = $user['role'] ?? 'USER';
 
-        // Set session
+        // Set session (optional, untuk web biasa)
         session()->set([
             'user_id'    => $user['id'],
             'user_name'  => $user['name'],
             'user_email' => $user['email'],
             'user_role'  => $role,
             'isLoggedIn' => true,
+        ]);
+
+        // Generate JWT token
+        $token = $this->generateJWT([
+            'id'    => $user['id'],
+            'email' => $user['email'],
+            'name'  => $user['name'],
+            'role'  => $role,
         ]);
 
         // Determine redirect URL based on role
@@ -64,6 +73,7 @@ class AuthController extends BaseController
         // Return JSON response for AJAX requests
         return $this->response->setJSON([
             'message'      => 'Login successful',
+            'token'        => $token,
             'redirect_url' => $redirectUrl,
             'user' => [
                 'id'    => $user['id'],
@@ -72,6 +82,29 @@ class AuthController extends BaseController
                 'role'  => $role,
             ],
         ]);
+    }
+
+    // Helper: Generate JWT (manual, compatible with JwtFilter)
+    private function generateJWT(array $payload): string
+    {
+        $header = [
+            'alg' => 'HS256',
+            'typ' => 'JWT',
+        ];
+        $ttl = (int) (env('JWT_TTL') ?: 604800);
+        $payload['exp'] = time() + $ttl;
+
+        $base64UrlEncode = function ($data) {
+            return rtrim(strtr(base64_encode(json_encode($data)), '+/', '-_'), '=');
+        };
+
+        $headerEncoded = $base64UrlEncode($header);
+        $payloadEncoded = $base64UrlEncode($payload);
+        $secret = env('JWT_SECRET') ?: 'default-insecure-key-change-me';
+        $signature = hash_hmac('sha256', "$headerEncoded.$payloadEncoded", $secret, true);
+        $signatureEncoded = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
+
+        return "$headerEncoded.$payloadEncoded.$signatureEncoded";
     }
 
     /**
@@ -237,11 +270,51 @@ class AuthController extends BaseController
     {
         session()->destroy();
 
-        // If AJAX / API request, return JSON; otherwise redirect to login
+        // If AJAX / API request, return JSON; otherwise redirect to home
         if ($this->request->isAJAX() || $this->request->hasHeader('Authorization')) {
             return $this->response->setJSON(['message' => 'Logout successful']);
         }
 
-        return redirect()->to(base_url('/auth/login'))->with('success', 'You have been logged out.');
+        return redirect()->to(base_url('/'))->with('success', 'You have been logged out.');
+    }
+
+    /**
+     * Get current user info from JWT (for /api/auth/me)
+     */
+    public function me()
+    {
+        $authHeader = $this->request->getHeaderLine('Authorization');
+        if (!$authHeader || !preg_match('/Bearer\\s(.*)/', $authHeader, $matches)) {
+            return $this->response->setStatusCode(401)->setJSON(['message' => 'No token provided']);
+        }
+        $token = $matches[1];
+        $payload = $this->decodeJWT($token);
+        if (!$payload) {
+            return $this->response->setStatusCode(401)->setJSON(['message' => 'Invalid or expired token']);
+        }
+        return $this->response->setJSON([
+            'user' => [
+                'id'    => $payload['id'] ?? null,
+                'email' => $payload['email'] ?? null,
+                'name'  => $payload['name'] ?? null,
+                'role'  => $payload['role'] ?? null,
+            ]
+        ]);
+    }
+
+    /**
+     * Helper: decode JWT token (compatible with generateJWT)
+     */
+    private function decodeJWT($token)
+    {
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) return null;
+        $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+        $secret = env('JWT_SECRET') ?: 'default-insecure-key-change-me';
+        $signature = hash_hmac('sha256', $parts[0] . '.' . $parts[1], $secret, true);
+        $signatureEncoded = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
+        if ($signatureEncoded !== $parts[2]) return null;
+        if (isset($payload['exp']) && $payload['exp'] < time()) return null;
+        return $payload;
     }
 }

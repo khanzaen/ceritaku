@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'CeritaKu - Platform Novel Indonesia' ?></title>
     
@@ -75,6 +78,8 @@
 
     <!-- Additional Scripts -->
     <?= $this->renderSection('additionalScripts') ?>
+
+    <!-- Flashdata notification div removed: notification hanya muncul sebagai global toast popup -->
 
     <!-- ═══════════════════════════════════════════════════════════ -->
     <!-- GLOBAL TOAST NOTIFICATION SYSTEM                           -->

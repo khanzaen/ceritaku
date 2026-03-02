@@ -51,7 +51,6 @@
             document.getElementById('admin-sidebar').classList.remove('open');
             document.getElementById('sidebar-overlay').classList.add('hidden');
         }
-        // ✅ JS auto-active dihapus — active state ditangani sepenuhnya oleh PHP
     </script>
 </body>
 

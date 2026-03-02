@@ -191,4 +191,44 @@ class UserLibraryModel extends Model
         // Clamp between 0 and 100
         return max(0, min(100, $percent));
     }
+        /**
+     * Get the last read story and chapter for a user
+     */
+    public function getLastReadStory($userId)
+    {
+        // Pastikan ada field progress (chapter_id) dan updated_at di tabel user_library
+        $builder = $this->db->table('user_library');
+        $builder->select('user_library.story_id, user_library.progress, user_library.updated_at');
+        $builder->where('user_library.user_id', $userId);
+        $builder->orderBy('user_library.updated_at', 'DESC');
+        $builder->limit(1);
+        $row = $builder->get()->getRowArray();
+
+        if (!$row) return null;
+
+        // Ambil detail story
+        $storyModel = new \App\Models\StoryModel();
+        $chapterModel = new \App\Models\ChapterModel();
+        $story = $storyModel->find($row['story_id']);
+        if (!$story) return null;
+
+        // Ambil detail chapter terakhir dibaca berdasarkan progress (chapter_number)
+        $lastChapter = null;
+        if (!empty($row['progress']) && is_numeric($row['progress'])) {
+            $lastChapter = $chapterModel->where('story_id', $row['story_id'])
+                ->where('chapter_number', (int)$row['progress'])
+                ->first();
+        }
+
+        // Tambahkan info author
+        $userModel = new \App\Models\UserModel();
+        $author = $userModel->find($story['author_id']);
+        $story['author_name'] = $author['name'] ?? 'Unknown';
+
+        // Tambahkan info chapter terakhir
+        $story['last_chapter'] = $lastChapter;
+
+        return $story;
+    }
+
 }

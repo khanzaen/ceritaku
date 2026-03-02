@@ -656,16 +656,16 @@ document.querySelectorAll('.counter').forEach(el => {
 /* ── 3D card tilt ──────────────────────────────────────── */
 document.querySelectorAll('.tilt-card').forEach(card => {
     card.addEventListener('mousemove', e => {
-        const rect = card.getBoundingClientRect();
-        const cx = rect.left + rect.width  / 2;
-        const cy = rect.top  + rect.height / 2;
-        const rx = ((e.clientY - cy) / (rect.height / 2)) * -8;
-        const ry = ((e.clientX - cx) / (rect.width  / 2)) *  8;
-        card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
-    });
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
-    });
+     const rect = card.getBoundingClientRect();
+     const cx = rect.left + rect.width  / 2;
+     const cy = rect.top  + rect.height / 2;
+     const rx = ((e.clientY - cy) / (rect.height / 2)) * -8;
+     const ry = ((e.clientX - cx) / (rect.width  / 2)) *  8;
+     card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+ });
+ card.addEventListener('mouseleave', () => {
+     card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+ });
 });
 </script>
 

@@ -235,9 +235,26 @@ class AuthController extends BaseController
      */
     public function logout()
     {
+        session()->remove([
+            'user_id', 'user_name', 'user_email',
+            'user_role', 'user_photo', 'isLoggedIn',
+        ]);
         session()->destroy();
 
-        // Return JSON response for AJAX requests
-        return $this->response->setJSON(['message' => 'Logout successful']);
+        // Jika AJAX (dari auth.js fetch) → return JSON
+        if ($this->request->isAJAX()) {
+            return $this->response
+                ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+                ->setHeader('Pragma', 'no-cache')
+                ->setJSON([
+                    'success'      => true,
+                    'message'      => 'Logout successful',
+                    'redirect_url' => base_url('/'),
+                ]);
+        }
+
+        // Request biasa (form POST dari admin sidebar) → redirect
+        return redirect()->to(base_url('/'))
+            ->with('success', 'You have been logged out successfully.');
     }
 }

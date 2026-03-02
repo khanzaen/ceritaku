@@ -481,12 +481,7 @@ document.getElementById('confirm-modal').addEventListener('click', function(e) {
                                     <button type="button" title="View Detail" class="action-btn view" onclick="openSO(<?= $lib['id'] ?>)">
                                         <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span>
                                     </button>
-                                    <form action="<?= base_url('/admin/library/delete/' . $lib['id']) ?>" method="POST" class="inline">
-                                        <?= csrf_field() ?>
-                                        <button type="button" title="Remove" class="action-btn delete" onclick="openModal(this.closest('form'), 'delete')">
-                                            <span class="material-symbols-outlined" style="font-size:16px">delete</span>
-                                        </button>
-                                    </form>
+                                    <!-- Delete button removed as requested -->
                                 </div>
                             </td>
                         </tr>

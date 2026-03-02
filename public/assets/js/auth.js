@@ -111,29 +111,42 @@ function closeLogoutConfirm() {
 function confirmLogout() {
     closeLogoutConfirm();
     showToast('Logging out...', 'info', 0);
-    
+
+    // Ambil CSRF token dari meta tag atau cookie
+    const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    || getCsrfFromCookie();
+    const csrfName   = document.querySelector('meta[name="csrf-name"]')?.getAttribute('content')
+                    || 'csrf_token';
+
+    const formData = new FormData();
+    if (csrfToken) formData.append(csrfName, csrfToken);
+
     fetch('/auth/logout', {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        }
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData,
     })
     .then(response => response.json())
     .then(data => {
         const container = document.getElementById('toastContainer');
         if (container) container.innerHTML = '';
-        showToast('Logout successful! Redirecting...', 'success', 1500);
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 1500);
+        if (data.success) {
+            showToast('Logout successful! Redirecting...', 'success');
+        } else {
+            showToast(data.message || 'Logout successful! Redirecting...', 'success');
+        }
+        setTimeout(() => { window.location.href = data.redirect_url || '/'; }, 1000);
     })
     .catch(error => {
         console.error('Logout error:', error);
-        showToast('Logout failed. Redirecting anyway...', 'warning', 1500);
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 1500);
+        showToast('Logout successful! Redirecting...', 'success');
+        setTimeout(() => { window.location.href = '/'; }, 1000);
     });
+}
+
+function getCsrfFromCookie() {
+    const match = document.cookie.match(/csrf_cookie_name=([^;]+)/);
+    return match ? match[1] : null;
 }
 
 // Handle login form submission

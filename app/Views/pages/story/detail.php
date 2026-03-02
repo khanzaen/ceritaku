@@ -388,38 +388,6 @@ function toggleLibrary(storyId) {
     }
 }
 </script>
-
-// Like/Unlike review AJAX
-function toggleLikeReview(reviewId, btn) {
-    const icon = document.getElementById('like-icon-' + reviewId);
-    const countSpan = document.getElementById('like-count-' + reviewId);
-    const liked = icon.textContent === 'favorite';
-    btn.disabled = true;
-    fetch('<?= base_url('/review/like/') ?>' + reviewId, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
-        },
-        body: JSON.stringify({ action: liked ? 'unlike' : 'like' })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            icon.textContent = data.liked ? 'favorite' : 'favorite_border';
-            countSpan.textContent = data.like_count;
-        } else if (data.message) {
-            alert(data.message);
-        }
-        btn.disabled = false;
-    })
-    .catch(() => {
-        btn.disabled = false;
-        alert('Failed to update like.');
-    });
-}
-
 <!-- Report Story Modal -->
 <div id="reportStoryModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md shadow-2xl animate-[slideUp_0.25s_ease]">

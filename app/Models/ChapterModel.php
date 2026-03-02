@@ -27,8 +27,6 @@ class ChapterModel extends Model
         'status',
         'created_at',
         'updated_at'
-        // 'author_note' - DIHAPUS karena tidak ada di tabel
-        // 'view_count' - DIHAPUS karena sudah dihapus
     ];
 
     // Dates

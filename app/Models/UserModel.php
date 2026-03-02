@@ -128,7 +128,6 @@ class UserModel extends Model
 
     /**
      * Authenticate user with email and password
-     * Returns user array if credentials are valid, null otherwise
      */
     public function authenticate(string $email, string $password): ?array
     {

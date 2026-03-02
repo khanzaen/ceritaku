@@ -562,6 +562,14 @@ class StoryController extends BaseController
         // Fetch popular authors
         $popular_authors = $this->userModel->getPopularAuthors(6);
 
+        // Fetch last read story for Continue Reading
+        $last_read_story = null;
+        if (session()->get('isLoggedIn')) {
+            $userId = session()->get('user_id');
+            // Pastikan UserLibraryModel punya method getLastReadStory($userId)
+            $last_read_story = $this->libraryModel->getLastReadStory($userId);
+        }
+
         $data = [
             'title' => 'Discover Stories',
             'stories' => $stories,
@@ -572,6 +580,7 @@ class StoryController extends BaseController
             'trending_data' => $trending_data,
             'latest_releases' => $latest_releases,
             'popular_authors' => $popular_authors,
+            'last_read_story' => $last_read_story,
         ];
 
         return view('pages/discover', $data);

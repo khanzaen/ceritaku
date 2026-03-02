@@ -115,16 +115,64 @@
         </div>
 
         <!-- Logout -->
-        <form action="<?= base_url('/auth/logout') ?>" method="POST">
-            <?= csrf_field() ?>
-            <button type="submit"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:text-red-600 transition-all"
-                style="border: 1px solid #fecaca; background: #fff5f5;"
-                onmouseover="this.style.background='#fee2e2'"
-                onmouseout="this.style.background='#fff5f5'">
-                <span class="material-symbols-rounded text-xl">logout</span>
-                Logout
-            </button>
-        </form>
+           <button type="button"
+               id="adminLogoutBtn"
+               class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:text-red-600 transition-all"
+               style="border: 1px solid #fecaca; background: #fff5f5;"
+               onmouseover="this.style.background='#fee2e2'"
+               onmouseout="this.style.background='#fff5f5'"
+               onclick="showAdminLogoutModal()">
+               <span class="material-symbols-rounded text-xl">logout</span>
+               Logout
+           </button>
+
+           <!-- Admin Logout Modal -->
+           <div id="adminLogoutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[70] items-center justify-center p-4">
+               <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all" onclick="event.stopPropagation()">
+                   <div class="p-6">
+                       <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                           <span class="material-symbols-rounded text-red-600 text-[32px]">logout</span>
+                       </div>
+                       <h3 class="text-xl font-bold text-center text-slate-900 mb-2">Logout</h3>
+                       <p class="text-center text-slate-600 text-sm mb-6">
+                           Are you sure you want to logout from your admin account?
+                       </p>
+                       <div class="flex gap-3">
+                           <button type="button" onclick="closeAdminLogoutModal()" class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium">
+                               Cancel
+                           </button>
+                           <button type="button" onclick="adminLogoutRedirect()" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                               Logout
+                           </button>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <script>
+           function showAdminLogoutModal() {
+               const modal = document.getElementById('adminLogoutModal');
+               if (modal) {
+                   modal.classList.remove('hidden');
+                   modal.classList.add('flex');
+               }
+           }
+           function closeAdminLogoutModal() {
+               const modal = document.getElementById('adminLogoutModal');
+               if (modal) {
+                   modal.classList.add('hidden');
+                   modal.classList.remove('flex');
+               }
+           }
+           function adminLogoutRedirect() {
+               window.location.href = '<?= base_url('/') ?>';
+           }
+           // Close modal when clicking outside
+           document.addEventListener('click', function(event) {
+               const modal = document.getElementById('adminLogoutModal');
+               if (modal && event.target === modal) {
+                   closeAdminLogoutModal();
+               }
+           });
+           </script>
     </div>
 </aside>

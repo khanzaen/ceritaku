@@ -116,18 +116,7 @@
         Save Changes
       </button>
     </div>
-
-    <!-- Info: publish chapter diatur dari halaman Edit Story -->
-    <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
-      <span class="material-symbols-outlined text-slate-400 text-lg flex-shrink-0 mt-0.5">info</span>
-      <p class="text-xs text-slate-500 leading-relaxed">
-          To publish a chapter, use the <strong class="text-slate-600">Publish for Review</strong> button on the
-          <a href="<?= site_url('story/edit/' . $story['id'] . '?tab=detail') ?>" class="text-accent font-semibold hover:underline">Edit Story</a> page.
-          All chapters will be reviewed together with the story.
-      </p>
-    </div>
   </form>
-
 </main>
 
 <script>

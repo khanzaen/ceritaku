@@ -12,13 +12,13 @@ class AuthFilter implements FilterInterface
     {
         // Kalau belum login, redirect ke home
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect()->to('/')->with('error', 'Please login first.');
         }
 
         // Kalau route admin, cek apakah rolenya ADMIN
         if ($arguments && in_array('admin', $arguments)) {
             if (strtoupper(session()->get('user_role')) !== 'ADMIN') {
-                return redirect()->to('/')->with('error', 'Akses ditolak. Hanya admin.');
+                return redirect()->to('/')->with('error', 'Access denied. Only admin can access this page.');
             }
         }
     }
