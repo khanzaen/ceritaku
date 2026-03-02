@@ -88,6 +88,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('/chapter/(:num)', 'ChapterController::read/$1');
     $routes->get('/read-chapter/(:num)', 'ChapterController::read/$1');
     $routes->post('/chapter/(:num)/comment', 'ChapterController::addComment/$1');
+    $routes->post('/comment/(:num)/edit', 'ChapterController::editComment/$1');
+$routes->post('/comment/(:num)/delete', 'ChapterController::deleteComment/$1');
 
     // Report Story
     $routes->get('/report-story/(:num)', 'ReportStoryController::index/$1');

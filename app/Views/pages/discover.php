@@ -70,6 +70,23 @@
 }
 .progress-bar-fill.animated { width: var(--target-width) !important; }
 
+/* ── Genre scroll ───────────────────────────────────────── */
+function scrollGenre(dir) {
+  const el = document.getElementById('genre-scroll');
+  if (el) el.scrollBy({ left: dir * 300, behavior: 'smooth' });
+}
+
+// Drag-to-scroll on genre scroll container
+(function() {
+  const el = document.getElementById('genre-scroll');
+  if (!el) return;
+  let isDown = false, startX, scrollLeft;
+  el.addEventListener('mousedown', e => { isDown = true; el.style.cursor = 'grabbing'; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; });
+  el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = ''; });
+  el.addEventListener('mouseup', () => { isDown = false; el.style.cursor = ''; });
+  el.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); const x = e.pageX - el.offsetLeft; el.scrollLeft = scrollLeft - (x - startX) * 1.5; });
+})();
+
 /* ── Ripple ─────────────────────────────────────────────── */
 .ripple-btn { position: relative; overflow: hidden; }
 .ripple {
@@ -178,7 +195,6 @@
                   <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
                   <p class="text-[10px] text-slate-500">
                     <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                    <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
                   </p>
                 </div>
               </div>
@@ -226,7 +242,6 @@
                               <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
                               <p class="text-[10px] text-slate-500">
                                 <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                                <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
                               </p>
                             </div>
                           </div>
@@ -349,7 +364,6 @@
                 <p class="text-[10px] text-slate-500"><?= esc($story['author_name'] ?? 'Unknown') ?></p>
                 <p class="text-[10px] text-slate-500">
                   <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                  <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
                 </p>
               </div>
             </div>
@@ -365,100 +379,81 @@
         <h2 class="text-2xl md:text-3xl font-bold text-primary">Trending by genre</h2>
         <a href="<?= base_url('/discover') ?>" class="text-sm font-semibold text-accent hover:underline">Browse all →</a>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <?php 
-        $genre_styles = [
-          'Romance' => [
-            'gradient' => 'from-pink-50 via-white to-white',
-            'icon' => 'favorite',
-            'progress_bar' => 'bg-pink-400',
-            'text_color' => 'text-pink-700',
-            'bg_color' => 'bg-pink-100',
-            'border_color' => 'border-pink-100',
-            'light_bg' => 'bg-white/80',
-          ],
-          'Mystery' => [
-            'gradient' => 'from-amber-50 via-white to-white',
-            'icon' => 'visibility',
-            'progress_bar' => 'bg-amber-400',
-            'text_color' => 'text-amber-700',
-            'bg_color' => 'bg-amber-100',
-            'border_color' => 'border-amber-100',
-            'light_bg' => 'bg-white/80',
-          ],
-          'Fantasy' => [
-            'gradient' => 'from-purple-50 via-white to-white',
-            'icon' => 'auto_awesome',
-            'progress_bar' => 'bg-purple-400',
-            'text_color' => 'text-purple-700',
-            'bg_color' => 'bg-purple-100',
-            'border_color' => 'border-purple-100',
-            'light_bg' => 'bg-white/80',
-          ],
-        ];
-
-        if (!empty($trending_data)):
-          foreach ($trending_genres as $genre):
-            $genre_stories = $trending_data[$genre] ?? [];
-            $styles = $genre_styles[$genre] ?? $genre_styles['Romance'];
-            // Calculate average rating for progress bar
-            $avg_rating = 0;
-            if (!empty($genre_stories)) {
-              $ratings = array_map(function($s) { return $s['avg_rating'] ?? 0; }, $genre_stories);
-              $avg_rating = !empty($ratings) ? (array_sum($ratings) / count($ratings)) : 0;
-            }
-            $progress_width = min(100, ($avg_rating / 5) * 100);
-        ?>
-        <div class="p-5 bg-gradient-to-br <?= $styles['gradient'] ?> border border-border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2 text-sm font-semibold <?= $styles['text_color'] ?>">
-              <span class="material-symbols-outlined text-base"><?= $styles['icon'] ?></span><?= $genre ?>
+      <?php 
+      $genre_palette = [
+        ['gradient'=>'from-pink-50 via-white to-white',   'icon'=>'favorite',               'bar'=>'bg-pink-400',   'text'=>'text-pink-700',   'bg'=>'bg-pink-100',   'border'=>'border-pink-100'],
+        ['gradient'=>'from-amber-50 via-white to-white',  'icon'=>'visibility',             'bar'=>'bg-amber-400',  'text'=>'text-amber-700',  'bg'=>'bg-amber-100',  'border'=>'border-amber-100'],
+        ['gradient'=>'from-purple-50 via-white to-white', 'icon'=>'auto_awesome',           'bar'=>'bg-purple-400', 'text'=>'text-purple-700', 'bg'=>'bg-purple-100', 'border'=>'border-purple-100'],
+        ['gradient'=>'from-blue-50 via-white to-white',   'icon'=>'explore',                'bar'=>'bg-blue-400',   'text'=>'text-blue-700',   'bg'=>'bg-blue-100',   'border'=>'border-blue-100'],
+        ['gradient'=>'from-green-50 via-white to-white',  'icon'=>'eco',                    'bar'=>'bg-green-400',  'text'=>'text-green-700',  'bg'=>'bg-green-100',  'border'=>'border-green-100'],
+        ['gradient'=>'from-red-50 via-white to-white',    'icon'=>'local_fire_department',  'bar'=>'bg-red-400',    'text'=>'text-red-700',    'bg'=>'bg-red-100',    'border'=>'border-red-100'],
+        ['gradient'=>'from-teal-50 via-white to-white',   'icon'=>'science',                'bar'=>'bg-teal-400',   'text'=>'text-teal-700',   'bg'=>'bg-teal-100',   'border'=>'border-teal-100'],
+        ['gradient'=>'from-orange-50 via-white to-white', 'icon'=>'bolt',                   'bar'=>'bg-orange-400', 'text'=>'text-orange-700', 'bg'=>'bg-orange-100', 'border'=>'border-orange-100'],
+        ['gradient'=>'from-indigo-50 via-white to-white', 'icon'=>'psychology',             'bar'=>'bg-indigo-400', 'text'=>'text-indigo-700', 'bg'=>'bg-indigo-100', 'border'=>'border-indigo-100'],
+        ['gradient'=>'from-rose-50 via-white to-white',   'icon'=>'sentiment_very_satisfied','bar'=>'bg-rose-400',  'text'=>'text-rose-700',   'bg'=>'bg-rose-100',   'border'=>'border-rose-100'],
+      ];
+      $palette_count = count($genre_palette);
+      ?>
+      <div class="relative">
+        <!-- Scroll container -->
+        <div id="genre-scroll" class="flex gap-4 overflow-x-auto pb-3 scroll-smooth" style="scrollbar-width:none; -ms-overflow-style:none;">
+          <?php 
+          if (!empty($trending_data)):
+            foreach ($trending_genres as $gi => $genre):
+              $genre_stories = $trending_data[$genre] ?? [];
+              if (empty($genre_stories)) continue;
+              $s = $genre_palette[$gi % $palette_count];
+              $ratings = array_column($genre_stories, 'avg_rating');
+              $avg_rating = count($ratings) ? array_sum($ratings) / count($ratings) : 0;
+              $progress_width = min(100, ($avg_rating / 5) * 100);
+          ?>
+          <div class="flex-none w-[280px] p-5 bg-gradient-to-br <?= $s['gradient'] ?> border border-border rounded-2xl shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2 text-sm font-semibold <?= $s['text'] ?>">
+                <span class="material-symbols-outlined text-base"><?= $s['icon'] ?></span><?= esc($genre) ?>
+              </div>
+              <span class="text-xs px-2 py-0.5 bg-white/80 <?= $s['text'] ?> rounded-full border <?= $s['border'] ?>">Rating</span>
             </div>
-            <span class="text-xs px-2 py-0.5 <?= $styles['light_bg'] ?> <?= $styles['text_color'] ?> rounded-full border <?= $styles['border_color'] ?>">Ratings & Reads</span>
-          </div>
-          <div class="h-1.5 w-full bg-white rounded-full border <?= $styles['border_color'] ?> mb-4 overflow-hidden">
-            <div class="progress-bar-fill h-full <?= $styles['progress_bar'] ?>" style="--target-width: <?= $progress_width ?>%"></div>
-          </div>
-          <ul class="space-y-3 text-sm text-slate-800">
-            <?php 
-            if (!empty($genre_stories)):
-              foreach ($genre_stories as $index => $story):
-                $rank = $index + 1;
-            ?>
-            <li>
-              <a href="<?= base_url('/story/' . $story['id']) ?>" class="flex items-start gap-3">
-                <div class="w-12 h-16 rounded overflow-hidden bg-slate-100 book-card-shadow flex-none group">
-                  <?php if (!empty($story['cover_image'])): ?>
-                    <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  <?php else: ?>
-                    <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
-                      <span class="material-symbols-outlined text-purple-400 text-[24px]">auto_stories</span>
-                    </div>
-                  <?php endif; ?>
-                </div>
-                <div class="flex-1 flex justify-between gap-3">
-                  <div class="flex flex-col">
-                    <span class="font-semibold line-clamp-1"><?= esc($story['title']) ?></span>
-                    <span class="text-xs text-slate-500">Rating <?= number_format($story['avg_rating'] ?? 0, 1) ?> | <?= number_format($story['total_views'] ?? 0) ?> dibaca</span>
+            <div class="h-1.5 w-full bg-white rounded-full border <?= $s['border'] ?> mb-4 overflow-hidden">
+              <div class="progress-bar-fill h-full <?= $s['bar'] ?>" style="--target-width: <?= $progress_width ?>%"></div>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-800">
+              <?php foreach ($genre_stories as $index => $story): ?>
+              <li>
+                <a href="<?= base_url('/story/' . $story['id']) ?>" class="flex items-start gap-3">
+                  <div class="w-10 h-14 rounded overflow-hidden bg-slate-100 book-card-shadow flex-none group">
+                    <?php if (!empty($story['cover_image'])): ?>
+                      <img src="<?= cover_url($story['cover_image']) ?>" alt="<?= esc($story['title']) ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <?php else: ?>
+                      <div class="w-full h-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-purple-400 text-[20px]">auto_stories</span>
+                      </div>
+                    <?php endif; ?>
                   </div>
-                  <span class="text-xs px-2 py-0.5 <?= $rank === 1 ? $styles['bg_color'] : 'bg-slate-50' ?> <?= $styles['text_color'] ?> rounded-full h-fit flex-none">#<?= $rank ?></span>
-                </div>
-              </a>
-            </li>
-            <?php 
-              endforeach;
-            else:
-            ?>
-            <li class="text-sm text-slate-500 text-center py-4">No stories found in this genre yet.</li>
-            <?php 
-            endif;
-            ?>
-          </ul>
+                  <div class="flex-1 flex justify-between gap-2 min-w-0">
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-semibold text-xs line-clamp-1"><?= esc($story['title']) ?></span>
+                      <span class="text-[10px] text-slate-500">⭐ <?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
+                    </div>
+                    <span class="text-[10px] px-1.5 py-0.5 <?= $index === 0 ? $s['bg'] : 'bg-slate-50' ?> <?= $s['text'] ?> rounded-full h-fit flex-none font-semibold">#<?= $index + 1 ?></span>
+                  </div>
+                </a>
+              </li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+          <?php 
+            endforeach;
+          endif;
+          ?>
         </div>
-        <?php 
-          endforeach;
-        endif;
-        ?>
+        <!-- Scroll buttons -->
+        <button id="genre-prev" onclick="scrollGenre(-1)" class="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-border shadow-md items-center justify-center hover:bg-slate-50 transition-all">
+          <span class="material-symbols-outlined text-slate-600 text-lg">chevron_left</span>
+        </button>
+        <button id="genre-next" onclick="scrollGenre(1)" class="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-border shadow-md items-center justify-center hover:bg-slate-50 transition-all">
+          <span class="material-symbols-outlined text-slate-600 text-lg">chevron_right</span>
+        </button>
       </div>
     </section>
 
@@ -497,7 +492,6 @@
               <h3 class="text-lg font-bold text-primary leading-tight line-clamp-2"><?= esc($story['title']) ?></h3>
               <p class="text-xs text-slate-500 mb-2">
                 <span class="text-amber-600 font-semibold"><?= number_format($story['avg_rating'] ?? 0, 1) ?></span>
-                <span class="text-slate-400">| <?= number_format($story['total_views'] ?? 0) ?> reads</span>
               </p>
               <p class="text-sm text-slate-600 line-clamp-3 italic"><?= esc(substr($story['description'] ?? '', 0, 100)) ?>...</p>
             </div>
@@ -617,6 +611,23 @@ const revealObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ── Genre scroll ───────────────────────────────────────── */
+function scrollGenre(dir) {
+  const el = document.getElementById('genre-scroll');
+  if (el) el.scrollBy({ left: dir * 300, behavior: 'smooth' });
+}
+
+// Drag-to-scroll on genre scroll container
+(function() {
+  const el = document.getElementById('genre-scroll');
+  if (!el) return;
+  let isDown = false, startX, scrollLeft;
+  el.addEventListener('mousedown', e => { isDown = true; el.style.cursor = 'grabbing'; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; });
+  el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = ''; });
+  el.addEventListener('mouseup', () => { isDown = false; el.style.cursor = ''; });
+  el.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); const x = e.pageX - el.offsetLeft; el.scrollLeft = scrollLeft - (x - startX) * 1.5; });
+})();
 
 /* ── Ripple ─────────────────────────────────────────────── */
 document.querySelectorAll('.ripple-btn').forEach(btn => {

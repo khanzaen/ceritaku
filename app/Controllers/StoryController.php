@@ -549,11 +549,28 @@ class StoryController extends BaseController
             $stories = $this->storyModel->getStoriesByGenre($genre);
         }
 
-        // Fetch trending stories by specific genres
-        $trending_genres = ['Romance', 'Mystery', 'Fantasy'];
+        // Fetch all unique genres from published stories
+        $db = \Config\Database::connect();
+        $genreRows = $db->query("SELECT genres FROM stories WHERE status = 'PUBLISHED'")->getResultArray();
+        $allGenres = [];
+        foreach ($genreRows as $row) {
+            foreach (explode(',', $row['genres']) as $g) {
+                $g = trim($g);
+                if ($g !== '') $allGenres[$g] = true;
+            }
+        }
+        $trending_genres = array_keys($allGenres);
+        sort($trending_genres);
+
         $trending_data = [];
         foreach ($trending_genres as $genre_name) {
-            $trending_data[$genre_name] = $this->storyModel->getStoriesByGenre($genre_name, 3);
+            $stories_in_genre = $this->storyModel->getStoriesByGenre($genre_name, 3);
+            if (!empty($stories_in_genre)) {
+                $trending_data[$genre_name] = $stories_in_genre;
+            } else {
+                // remove from list if no stories
+                $trending_genres = array_values(array_filter($trending_genres, fn($g) => $g !== $genre_name));
+            }
         }
 
         // Fetch latest releases

@@ -223,7 +223,8 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                     <?php if (!empty($comments)): ?>
                         <ul class="divide-y divide-border">
                             <?php foreach ($comments as $comment): ?>
-                                <li class="p-4 flex gap-3">
+                                <?php $isOwner = $isLoggedIn && session()->get('user_id') == $comment['user_id']; ?>
+                                <li class="p-4 flex gap-3" id="comment-<?= $comment['id'] ?>">
                                     <div class="shrink-0 w-8 h-8 rounded-full bg-accent/20 overflow-hidden flex items-center justify-center text-accent text-xs font-bold">
                                         <?php if (!empty($comment['user_photo'])): ?>
                                             <img src="<?= profile_url($comment['user_photo']) ?>" class="w-full h-full object-cover">
@@ -231,11 +232,52 @@ $progressPct = $totalChaps > 0 ? round(($currentNum / $totalChaps) * 100) : 0;
                                             <?= strtoupper(substr($comment['user_name'] ?? 'A', 0, 1)) ?>
                                         <?php endif; ?>
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-slate-900"><?= esc($comment['user_name'] ?? 'Anonim') ?>
-                                            <span class="text-xs font-normal text-slate-400 ml-1"><?= date('d M Y', strtotime($comment['created_at'])) ?></span>
-                                        </p>
-                                        <p class="text-sm text-slate-700 mt-0.5 leading-relaxed"><?= esc($comment['comment']) ?></p>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <p class="text-sm font-semibold text-slate-900"><?= esc($comment['user_name'] ?? 'Anonim') ?>
+                                                <span class="text-xs font-normal text-slate-400 ml-1"><?= date('d M Y', strtotime($comment['created_at'])) ?></span>
+                                            </p>
+                                            <?php if ($isOwner): ?>
+                                                <div class="flex items-center gap-1">
+                                                    <button onclick="toggleEditForm(<?= $comment['id'] ?>)"
+                                                            class="text-xs text-slate-400 hover:text-accent transition-colors px-2 py-1 rounded hover:bg-accent/10"
+                                                            title="Edit comment">
+                                                        <span class="material-symbols-outlined text-sm align-middle">edit</span>
+                                                    </button>
+                                                    <form method="POST" action="<?= base_url('/comment/' . $comment['id'] . '/delete') ?>" onsubmit="return confirm('Delete this comment?')" class="inline">
+                                                        <?= csrf_field() ?>
+                                                        <button type="submit"
+                                                                class="text-xs text-slate-400 hover:text-red-500 transition-colors px-2 py-1 rounded hover:bg-red-50"
+                                                                title="Delete comment">
+                                                            <span class="material-symbols-outlined text-sm align-middle">delete</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <!-- Comment text (view mode) -->
+                                        <p class="text-sm text-slate-700 mt-0.5 leading-relaxed comment-text-<?= $comment['id'] ?>"><?= esc($comment['comment']) ?></p>
+
+                                        <!-- Edit form (hidden by default) -->
+                                        <?php if ($isOwner): ?>
+                                        <form id="edit-form-<?= $comment['id'] ?>" method="POST" action="<?= base_url('/comment/' . $comment['id'] . '/edit') ?>"
+                                              class="hidden mt-2">
+                                            <?= csrf_field() ?>
+                                            <textarea name="comment" rows="2" required
+                                                      class="w-full text-sm border border-border rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-accent text-slate-800"><?= esc($comment['comment']) ?></textarea>
+                                            <div class="flex gap-2 mt-1.5">
+                                                <button type="submit"
+                                                        class="text-xs bg-accent text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition-all">
+                                                    Save
+                                                </button>
+                                                <button type="button" onclick="toggleEditForm(<?= $comment['id'] ?>)"
+                                                        class="text-xs text-slate-500 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                        <?php endif; ?>
                                     </div>
                                 </li>
                             <?php endforeach; ?>
@@ -371,5 +413,16 @@ document.getElementById('reset-btn').addEventListener('click',   () => { localSt
 // Auto-scroll sidebar ke bab aktif
 const activeItem = document.querySelector('#chapter-list a.bg-accent');
 if (activeItem) activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+// Toggle edit form for comments
+function toggleEditForm(commentId) {
+    const form = document.getElementById('edit-form-' + commentId);
+    const text = document.querySelector('.comment-text-' + commentId);
+    if (form && text) {
+        const isHidden = form.classList.contains('hidden');
+        form.classList.toggle('hidden', !isHidden);
+        text.classList.toggle('hidden', isHidden);
+    }
+}
 </script>
 <?= $this->endSection() ?>

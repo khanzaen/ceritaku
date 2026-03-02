@@ -271,4 +271,60 @@ class ChapterController extends BaseController
 
         return redirect()->back()->with('error', 'Failed to add comment');
     }
+    /**
+ * Edit comment (only owner)
+ */
+public function editComment($commentId)
+{
+    if (!session()->get('isLoggedIn')) {
+        return redirect()->to('/login')->with('error', 'Please log in');
+    }
+
+    $comment = $this->commentModel->find($commentId);
+
+    if (!$comment) {
+        return redirect()->back()->with('error', 'Comment not found');
+    }
+
+    if ($comment['user_id'] != session()->get('user_id')) {
+        return redirect()->back()->with('error', 'You can only edit your own comments');
+    }
+
+    $newText = $this->request->getPost('comment');
+    if (empty(trim($newText))) {
+        return redirect()->back()->with('error', 'Comment cannot be empty');
+    }
+
+    if ($this->commentModel->update($commentId, ['comment' => $newText])) {
+        return redirect()->back()->with('success', 'Comment updated successfully');
+    }
+
+    return redirect()->back()->with('error', 'Failed to update comment');
+}
+
+/**
+ * Delete comment (only owner)
+ */
+public function deleteComment($commentId)
+{
+    if (!session()->get('isLoggedIn')) {
+        return redirect()->to('/login')->with('error', 'Please log in');
+    }
+
+    $comment = $this->commentModel->find($commentId);
+
+    if (!$comment) {
+        return redirect()->back()->with('error', 'Comment not found');
+    }
+
+    if ($comment['user_id'] != session()->get('user_id')) {
+        return redirect()->back()->with('error', 'You can only delete your own comments');
+    }
+
+    if ($this->commentModel->delete($commentId)) {
+        return redirect()->back()->with('success', 'Comment deleted successfully');
+    }
+
+    return redirect()->back()->with('error', 'Failed to delete comment');
+}
 }
